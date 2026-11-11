@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inflatable tent 3D</title>
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#e4e7ea;font-family:"Helvetica Neue",Helvetica,Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+#panel{position:fixed;left:12px;top:12px;z-index:2;background:rgba(255,255,255,.93);border-radius:8px;padding:10px 12px;font-size:13px;color:#1d2733;max-width:300px;box-shadow:0 1px 4px rgba(0,0,0,.15);line-height:1.5}
+#panel b{font-size:14px}
+#panel summary{cursor:pointer;list-style:none}
+#panel summary::-webkit-details-marker{display:none}
+.row{margin-top:8px}
+.lab{display:block;font-size:12px;color:#5b6875;margin-bottom:2px}
+#modes button,#views button,#langs button{margin:3px 4px 0 0;border:1px solid #9aa3ad;background:#fff;border-radius:4px;padding:4px 9px;font-size:12.5px;cursor:pointer;color:#1d2733}
+#modes button.on{background:#e0601f;color:#fff;border-color:#e0601f}
+.ver{font-weight:400;font-size:11.5px;color:#7a8590;margin-left:4px}
+#views button.on,#langs button.on{background:#1d2733;color:#fff;border-color:#1d2733}
+.note{margin-top:8px;font-size:12px;color:#5b6875}
+@media (max-width:600px){#panel{left:8px;right:8px;top:8px;max-width:none;padding:8px 10px}#modes button,#views button,#langs button{padding:5px 8px;font-size:12px}}
+.tag{display:flex;align-items:center;font-size:var(--fs,13px);color:#1d2733;white-space:nowrap;pointer-events:none}
+.tag i{width:calc(var(--fs,13px) * .55);height:calc(var(--fs,13px) * .55);border-radius:50%;background:#e9541a;border:1.5px solid #fff;box-shadow:0 0 0 1px #1d2733;flex:none}
+.tag em{width:calc(var(--fs,13px) * 1.6);height:max(1.5px, calc(var(--fs,13px) * .1));background:#1d2733;flex:none}
+.tag span{font-style:normal;background:rgba(255,255,255,.94);border:1px solid #1d2733;border-radius:3px;padding:2px 6px}
+.tag.l{flex-direction:row-reverse}
+.dim{text-align:left;font-size:calc(var(--fs,13px) * .82);color:#1d2733;background:rgba(255,255,255,.88);padding:0 3px;border-radius:2px;white-space:nowrap;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="panel"><details id="info" open><summary><b data-t="title">充气帐篷 3D（气柱在帐篷里）</b> <span class="ver" data-t="ver">版本 2026-11-11</span></summary>
+<div class="row"><span class="lab" data-t="what">看什么</span><span id="modes"><button data-m="solid" data-t="m_solid">帐篷</button><button data-m="ghost" data-t="m_ghost">外罩半透明</button><button data-m="none" data-t="m_none">只看气柱</button></span></div>
+<div class="row"><span class="lab" data-t="where">从哪看</span><span id="views"><button data-v="cmain" data-t="v_cmain">外面·前</button><button data-v="cback" data-t="v_cback">外面·后</button><button data-v="cfront" data-t="v_cfront">前端正面</button><button data-v="cside" data-t="v_cside">侧面 A</button><button data-v="cin" data-t="v_cin">里面</button><button data-v="din" data-t="v_din">里面 D 环</button><button data-v="eave" data-t="v_eave">檐口拐角</button><button data-v="apex" data-t="v_apex">平顶</button><button data-v="foot" data-t="v_foot">侧墙</button><button data-v="corner" data-t="v_corner">墙角</button><button data-v="valve" data-t="v_valve">检修口阀门</button></span></div>
+<label class="row" style="display:block"><input type="checkbox" id="lbl" checked> <span data-t="labels">显示标签</span>　<input type="checkbox" id="dims"> <span data-t="dims">显示尺寸</span>　<input type="checkbox" id="port"> <span data-t="port">检修口打开</span></label>
+<div class="row"><span class="lab" data-t="lang">语言</span><span id="langs"><button data-l="zh">中文</button><button data-l="en">English</button><button data-l="pl">Polski</button></span></div>
+<div class="note" data-t="note">TENT-7252-01（外罩）+ TENT-7252-02（气柱）。Ø350，总高 2.75 m，4 根拱形 + 5 根纵向；深色带是焊缝，卷管焊缝都朝外罩。勾“显示尺寸”看位置尺寸（侧面 A、前端正面、里面 D 环三个视角）。拖动旋转，双指或滚轮缩放。</div>
+</details></div>
+<script type="importmap">
+{"imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+{ const f = new URLSearchParams(location.hash.slice(1)).get("fs"); if (f) document.documentElement.style.setProperty("--fs", f + "px"); }
+const L = 7.2, W = 5.2, EI = 0.3, EZ = 1.95, RW = 0.7, RZ = 2.75;
+const D = 0.35, R = D / 2;
+const BX = [0.3, 2.5, 4.7, 6.9];
+const VZ = 0.49, SZ = 0.36;
+const CUT = { x0: 0.15, x1: 0.45, z0: 0.25, z1: 0.55 };
+const CAP = 0.1;
+const WELD = 0.028;
+const PINCH = 0.06, PW = 0.05;
+const M = 72;
+const P = (x, u, z) => new THREE.Vector3(x - L / 2, z, u - W / 2);
+const OUTL = [[0, 0], [EI, EZ], [(W - RW) / 2, RZ], [(W + RW) / 2, RZ], [W - EI, EZ], [W, 0]];
+function offsetIn(pts, d) {
+  const segs = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [y1, z1] = pts[i], [y2, z2] = pts[i + 1];
+    const dy = y2 - y1, dz = z2 - z1, n = Math.hypot(dy, dz);
+    segs.push([[y1 + dz / n * d, z1 - dy / n * d], [dy, dz]]);
+  }
+  let [[py, pz], [dy, dz]] = segs[0];
+  const out = [[py - pz / dz * dy, 0]];
+  for (let i = 0; i < segs.length - 1; i++) {
+    const [p1, d1] = segs[i], [p2, d2] = segs[i + 1];
+    const det = -d1[0] * d2[1] + d1[1] * d2[0];
+    const rx = p2[0] - p1[0], rz = p2[1] - p1[1];
+    const s = (-rx * d2[1] + rz * d2[0]) / det;
+    out.push([p1[0] + d1[0] * s, p1[1] + d1[1] * s]);
+  }
+  [[py, pz], [dy, dz]] = segs[segs.length - 1];
+  out.push([py - pz / dz * dy, 0]);
+  return out;
+}
+const CEN = offsetIn(OUTL, R);
+const EB = CEN[1], RB = [W / 2, RZ - R], GB = [(R * Math.hypot(EI, EZ) + EI * R) / EZ, R];
+const bodyMat = new THREE.MeshStandardMaterial({ color: 0xaeb5bc, roughness: 0.36, metalness: 0.0, envMapIntensity: 0.55 });
+const weldMat = new THREE.MeshStandardMaterial({ color: 0x5d656d, roughness: 0.55, metalness: 0.0, envMapIntensity: 0.4, side: THREE.DoubleSide });
+function tube(A, d, C, ts, te, pinchS, pinchE, part, seamS = ts, seamE = te) {
+  const pos = [], idx = [];
+  const len = Math.max(...te.map((v, j) => v - ts[j]));
+  let ss;
+  if (part === "body") {
+    const K = Math.max(8, Math.ceil(len / 0.012));
+    ss = Array.from({ length: K + 1 }, (_, k) => k / K);
+  } else {
+    ss = [0, 0.25, 0.5, 0.75, 1];
+  }
+  const pinch = (a, b) => 1 - PINCH * ((pinchS ? Math.exp(-((Math.max(0, a) / PW) ** 2)) : 0) + (pinchE ? Math.exp(-((Math.max(0, b) / PW) ** 2)) : 0));
+  for (const s of ss) {
+    for (let j = 0; j < C.length; j++) {
+      let t;
+      if (part === "body") t = ts[j] + s * (te[j] - ts[j]);
+      else if (part === "s") t = seamS[j] - 0.006 + s * (WELD + 0.006);
+      else t = seamE[j] + 0.006 - s * (WELD + 0.006);
+      const f = pinch(t - seamS[j], seamE[j] - t) * (part === "body" ? 1 : 1.014);
+      const p = A.clone().addScaledVector(d, t).addScaledVector(C[j], f);
+      pos.push(p.x, p.y, p.z);
+    }
+  }
+  const n = C.length;
+  for (let k = 0; k < ss.length - 1; k++) for (let j = 0; j < n; j++) {
+    const a = k * n + j, b = k * n + (j + 1) % n, c = (k + 1) * n + j, e = (k + 1) * n + (j + 1) % n;
+    idx.push(a, c, b, b, c, e);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g, part === "body" ? bodyMat : weldMat);
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+function seamStrip(A, d, C, ts, te, pinchS, pinchE, j0, seamS = ts, seamE = te) {
+  const pos = [], idx = [], J = [-1, 0, 1].map(k => (j0 + k + C.length) % C.length);
+  const len = Math.max(...te.map((v, j) => v - ts[j]));
+  const K = Math.max(8, Math.ceil(len / 0.03));
+  const pinch = (a, b) => 1 - PINCH * ((pinchS ? Math.exp(-((Math.max(0, a) / PW) ** 2)) : 0) + (pinchE ? Math.exp(-((Math.max(0, b) / PW) ** 2)) : 0));
+  for (let k = 0; k <= K; k++) for (const j of J) {
+    const t = seamS[j] + (seamE[j] - seamS[j]) * k / K;
+    const p = A.clone().addScaledVector(d, t).addScaledVector(C[j], pinch(t - seamS[j], seamE[j] - t) * 1.012);
+    pos.push(p.x, p.y, p.z);
+  }
+  for (let k = 0; k < K; k++) for (let q = 0; q < 2; q++) {
+    const a = k * 3 + q, b = a + 1, c = a + 3, e = a + 4;
+    idx.push(a, c, b, b, c, e);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return new THREE.Mesh(g, weldMat);
+}
+const jOf = th => ((Math.round(th / (2 * Math.PI) * M) % M) + M) % M;
+const frame = new THREE.Group();
+const anchors = {};
+function arch(bx, n) {
+  const pts = CEN.map(([u, z]) => P(bx, u, z));
+  const up = new THREE.Vector3(0, 1, 0), ex = new THREE.Vector3(1, 0, 0);
+  for (let i = 0; i < 5; i++) {
+    const A = pts[i], B = pts[i + 1];
+    const d = B.clone().sub(A).normalize();
+    const e2 = new THREE.Vector3().crossVectors(ex, d).normalize();
+    const ns = i === 0 ? up : pts[i].clone().sub(pts[i - 1]).normalize().add(d).normalize();
+    const ne = i === 4 ? up : pts[i + 2].clone().sub(pts[i + 1]).normalize().add(d).normalize();
+    const C = [], ts = [], te = [], ss = [], se = [];
+    const G = P(bx, i === 0 ? GB[0] : W - GB[0], GB[1]), tG = G.clone().sub(A).dot(d);
+    for (let j = 0; j < M; j++) {
+      const th = 2 * Math.PI * j / M;
+      const c = ex.clone().multiplyScalar(R * Math.cos(th)).addScaledVector(e2, R * Math.sin(th));
+      const base = A.clone().add(c);
+      C.push(c);
+      let a = A.clone().sub(base).dot(ns) / d.dot(ns), b = B.clone().sub(base).dot(ne) / d.dot(ne);
+      if (i === 0) a = tG + R * Math.abs(Math.cos(th));
+      if (i === 4) b = tG - R * Math.abs(Math.cos(th));
+      ss.push(a); se.push(b);
+      ts.push(i === 0 ? a - 0.012 : a); te.push(i === 4 ? b + 0.012 : b);
+    }
+    const pS = i === 0 || i === 2 || i === 3, pE = i === 1 || i === 2 || i === 4;
+    frame.add(tube(A, d, C, ts, te, pS, pE, "body", ss, se));
+    frame.add(tube(A, d, C, ts, te, pS, pE, "s", ss, se));
+    frame.add(tube(A, d, C, ts, te, pS, pE, "e", ss, se));
+    const j0 = 3 * M / 4 + (n === 1 && i === 4 ? -7 : n === 4 && i === 0 ? 7 : 0);
+    frame.add(seamStrip(A, d, C, ts, te, pS, pE, j0, ss, se));
+    const mid = j => A.clone().addScaledVector(d, (ss[j] + se[j]) / 2).addScaledVector(C[j], 1.03);
+    anchors[`seam${n}_${i}`] = mid(j0);
+    if (i === 0) anchors[`foot${n}_B`] = A.clone().addScaledVector(d, ss[M / 4]).add(C[M / 4]);
+    if (i === 4) anchors[`foot${n}_A`] = A.clone().addScaledVector(d, se[M / 4]).add(C[M / 4]);
+    if (i > 0) {
+      anchors[`miter${n}_${i}`] = A.clone().addScaledVector(d, ts[0]).add(C[0]);
+      anchors[`miterB${n}_${i}`] = A.clone().addScaledVector(d, ts[M / 2]).add(C[M / 2]);
+    }
+  }
+}
+BX.forEach((bx, k) => arch(bx, k + 1));
+const SEG2 = [];
+{
+  const dir = i => { const [u1, z1] = CEN[i], [u2, z2] = CEN[i + 1], l = Math.hypot(u2 - u1, z2 - z1); return [(u2 - u1) / l, (z2 - z1) / l]; };
+  const nrm = ([a, b]) => { const l = Math.hypot(a, b); return [a / l, b / l]; };
+  for (let i = 0; i < 5; i++) {
+    const d = dir(i);
+    let ns = i === 0 ? [0, 1] : nrm([dir(i - 1)[0] + d[0], dir(i - 1)[1] + d[1]]);
+    let ne = i === 4 ? [0, 1] : nrm([dir(i + 1)[0] + d[0], dir(i + 1)[1] + d[1]]);
+    if (ns[0] * d[0] + ns[1] * d[1] < 0) ns = [-ns[0], -ns[1]];
+    if (ne[0] * d[0] + ne[1] * d[1] < 0) ne = [-ne[0], -ne[1]];
+    SEG2.push({ p: CEN[i], q: CEN[i + 1], d, ns, ne });
+  }
+}
+function halfLen(u, z, r) {
+  let h = 0;
+  for (const { p, q, d, ns, ne } of SEG2) {
+    if ((u - p[0]) * ns[0] + (z - p[1]) * ns[1] < -1e-9) continue;
+    if ((u - q[0]) * ne[0] + (z - q[1]) * ne[1] > 1e-9) continue;
+    const perp = Math.abs((u - p[0]) * d[1] - (z - p[1]) * d[0]);
+    if (perp < r) h = Math.max(h, Math.sqrt(r * r - perp * perp));
+  }
+  return h;
+}
+const LONG = { ridge: RB, eaveB: EB, eaveA: [W - EB[0], EB[1]] };
+const SEAM_TH = {
+  ridge: Math.PI / 2,
+  eaveB: Math.atan2(EZ - EB[1], EI - EB[0]), eaveA: Math.atan2(EZ - EB[1], EB[0] - EI),
+  groundB: Math.atan2(EI, -EZ), groundA: Math.atan2(EI, EZ),
+};
+for (const [name, [u0, z0]] of Object.entries(LONG)) {
+  for (let k = 0; k < BX.length - 1; k++) {
+    const A = P(0, u0, z0), d = new THREE.Vector3(1, 0, 0);
+    const C = [], ts = [], te = [], ss = [], se = [];
+    for (let j = 0; j < M; j++) {
+      const th = 2 * Math.PI * j / M;
+      const cu = R * Math.cos(th), cz = R * Math.sin(th);
+      const h = halfLen(u0 + cu, z0 + cz, R), hd = halfLen(u0 + cu, z0 + cz, R * 0.86);
+      C.push(new THREE.Vector3(0, cz, cu));
+      ss.push(BX[k] + h); se.push(BX[k + 1] - h);
+      ts.push(BX[k] + Math.min(h, hd + 0.01)); te.push(BX[k + 1] - Math.min(h, hd + 0.01));
+    }
+    frame.add(tube(A, d, C, ts, te, true, true, "body", ss, se));
+    frame.add(tube(A, d, C, ts, te, true, true, "s", ss, se));
+    frame.add(tube(A, d, C, ts, te, true, true, "e", ss, se));
+    frame.add(seamStrip(A, d, C, ts, te, true, true, jOf(SEAM_TH[name]), ss, se));
+    anchors[`${name}_${k}_s`] = j => A.clone().addScaledVector(d, ss[j]).add(C[j]);
+    anchors[`${name}_${k}_e`] = j => A.clone().addScaledVector(d, se[j]).add(C[j]);
+  }
+}
+for (const [name, u0] of [["groundB", GB[0]], ["groundA", W - GB[0]]]) {
+  const z0 = GB[1], A = P(0, u0, z0), d = new THREE.Vector3(1, 0, 0);
+  const C = [], ts = [], te = [];
+  for (let j = 0; j < M; j++) {
+    const th = 2 * Math.PI * j / M;
+    C.push(new THREE.Vector3(0, R * Math.sin(th), R * Math.cos(th)));
+    ts.push(BX[0] - R); te.push(BX[3] + R);
+  }
+  frame.add(tube(A, d, C, ts, te, false, false, "body"));
+  frame.add(tube(A, d, C, ts, te, false, false, "s"));
+  frame.add(tube(A, d, C, ts, te, false, false, "e"));
+  frame.add(seamStrip(A, d, C, ts, te, false, false, jOf(SEAM_TH[name])));
+  for (const [x, sg] of [[ts[0], -1], [te[0], 1]]) {
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 20, 0, 2 * Math.PI, 0, Math.PI / 2), bodyMat);
+    cap.scale.set(R, CAP, R);
+    cap.rotation.z = -sg * Math.PI / 2;
+    cap.position.copy(P(x, u0, z0));
+    cap.castShadow = true; cap.receiveShadow = true;
+    frame.add(cap);
+  }
+  anchors[`${name}_cap`] = P(ts[0] - CAP, u0, z0);
+  anchors[`${name}_mid`] = x => P(x, u0, z0).add(C[jOf(SEAM_TH[name])].clone().multiplyScalar(1.03));
+}
+const valveMeshes = [];
+function valve(bx, sideA, h, kind) {
+  const foot = sideA ? CEN[5] : CEN[0], top = sideA ? CEN[4] : CEN[1];
+  const du = top[0] - foot[0], dz = top[1] - foot[1], l = Math.hypot(du, dz);
+  const nu = sideA ? dz / l : -dz / l, nz = sideA ? -du / l : du / l;
+  const z = h - R * nz, u = foot[0] + du * z / dz;
+  const p = P(bx, u + R * nu, z + R * nz);
+  const g = new THREE.Group();
+  const add = (r, hh, y, col, rough = 0.5) => {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, hh, 40), new THREE.MeshStandardMaterial({ color: col, roughness: rough }));
+    m.position.y = y; m.castShadow = true; g.add(m);
+  };
+  if (kind === "V") {
+    add(0.058, 0.012, 0.004, 0xeeeeea); add(0.036, 0.03, 0.022, 0xf4f4f0); add(0.042, 0.012, 0.04, 0xd9dad6, 0.4);
+  } else {
+    add(0.05, 0.016, 0.006, 0x2a2d30); add(0.04, 0.03, 0.026, 0xd32a2a, 0.45); add(0.03, 0.006, 0.044, 0x9e1f1f);
+  }
+  g.position.copy(p);
+  g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, nz, nu).normalize());
+  frame.add(g); valveMeshes.push(g);
+  anchors[`valve_${bx}_${kind}`] = p.clone().add(new THREE.Vector3(0, nz, nu).multiplyScalar(0.05));
+}
+for (const [bx, a] of [[BX[0], true], [BX[3], false]]) { valve(bx, a, VZ, "V"); valve(bx, a, SZ, "S"); }
+const coverLines = new THREE.Group();
+{
+  const segs = [];
+  for (const x of [0, L]) for (let i = 0; i < OUTL.length - 1; i++) segs.push(P(x, ...OUTL[i]), P(x, ...OUTL[i + 1]));
+  for (const [u, z] of OUTL.slice(1, -1)) segs.push(P(0, u, z), P(L, u, z));
+  segs.push(P(0, 0, 0), P(0, W, 0), P(L, 0, 0), P(L, W, 0), P(0, 0, 0), P(L, 0, 0), P(0, W, 0), P(L, W, 0));
+  coverLines.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(segs),
+    new THREE.LineBasicMaterial({ color: 0xe9541a, transparent: true, opacity: 0.75 })));
+}
+const coverPatch = new THREE.Group();
+{
+  const len = Math.hypot(EI, EZ), sOf = z => z * len / EZ;
+  const shape = new THREE.Shape([[0, 0], [1.3, 0], [1.3, sOf(1.25)], [0, sOf(1.25)]].map(([a, b]) => new THREE.Vector2(a, b)));
+  shape.holes.push(new THREE.Path([[CUT.x0, sOf(CUT.z0)], [CUT.x1, sOf(CUT.z0)], [CUT.x1, sOf(CUT.z1)], [CUT.x0, sOf(CUT.z1)]].map(([a, b]) => new THREE.Vector2(a, b))));
+  const g = new THREE.ShapeGeometry(shape);
+  const p = g.attributes.position, nOut = new THREE.Vector3(0, EI / len, EZ / len);
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), s = p.getY(i);
+    const v = P(x, W - EI * s / len, EZ * s / len).addScaledVector(nOut, 0.004);
+    p.setXYZ(i, v.x, v.y, v.z);
+  }
+  g.computeVertexNormals();
+  coverPatch.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0xe9541a, roughness: 0.7, transparent: true, opacity: 0.9, side: THREE.DoubleSide, depthWrite: false })));
+  const hole = [[CUT.x0, CUT.z0], [CUT.x1, CUT.z0], [CUT.x1, CUT.z1], [CUT.x0, CUT.z1], [CUT.x0, CUT.z0]]
+    .map(([x, z]) => P(x, W - EI * z / EZ, z).addScaledVector(nOut, 0.006));
+  coverPatch.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(hole), new THREE.LineBasicMaterial({ color: 0x1d2733 })));
+  anchors.port = P(CUT.x1, W - EI * CUT.z1 / EZ, CUT.z1).addScaledVector(nOut, 0.006);
+}
+const DOOR = { w: 1.6, sill: 0.15, h: 2.0 };
+const SWN = 0.5, SW_X = [0.95, 5.75], SW_Z = [0.9, 1.4];
+const PK = { w: 0.35, h: 0.25, zc: 1.6 }, SP_X = 2.6;
+const EW = 0.3, END_WIN_ZC = 1.4;
+const END_WIN_U = [(W - DOOR.w) / 2 - 0.3 - EW, (W - DOOR.w) / 2 - 0.3];
+const END_PK_U = [(W + DOOR.w) / 2 + 0.3, (W + DOOR.w) / 2 + 0.3 + PK.w];
+const OUT_X = [3.0, 4.2], CAB_X = [1.7, 5.5], SLV_Z = 0.65;
+const DR_X = [0.3, 1.95, 3.6, 5.25, 6.9], DR_Z = [0.1, 1.75];
+const IN_DU = [-1.45, -0.85, -0.2, 0.2, 0.85, 1.45];
+const SEC = (() => {
+  const O = offsetIn(OUTL, -0.004), rf = R + 0.004, out = [];
+  const nrm = (a, b) => { const l = Math.hypot(b[0] - a[0], b[1] - a[1]); return [(b[0] - a[0]) / l, (b[1] - a[1]) / l]; };
+  const T = [];
+  for (let k = 1; k <= 4; k++) {
+    const d1 = nrm(O[k - 1], O[k]), d2 = nrm(O[k], O[k + 1]);
+    const turn = Math.acos(Math.max(-1, Math.min(1, d1[0] * d2[0] + d1[1] * d2[1]))), t = rf * Math.tan(turn / 2);
+    const t1 = [O[k][0] - d1[0] * t, O[k][1] - d1[1] * t], t2 = [O[k][0] + d2[0] * t, O[k][1] + d2[1] * t];
+    T.push({ t1, t2, c: [t1[0] + d1[1] * rf, t1[1] - d1[0] * rf] });
+  }
+  const line = (a, b) => {
+    const d = nrm(a, b), n = Math.max(2, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 0.05));
+    for (let i = 0; i < n; i++) out.push({ u: a[0] + (b[0] - a[0]) * i / n, z: a[1] + (b[1] - a[1]) * i / n, nu: -d[1], nz: d[0] });
+  };
+  const marks = {};
+  let prev = O[0];
+  T.forEach((q, k) => {
+    line(prev, q.t1);
+    let a1 = Math.atan2(q.t1[1] - q.c[1], q.t1[0] - q.c[0]), a2 = Math.atan2(q.t2[1] - q.c[1], q.t2[0] - q.c[0]);
+    let da = a2 - a1; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+    for (let i = 0; i < 10; i++) {
+      const a = a1 + da * i / 10;
+      if (i === 5) marks[k] = out.length;
+      out.push({ u: q.c[0] + rf * Math.cos(a), z: q.c[1] + rf * Math.sin(a), nu: Math.cos(a), nz: Math.sin(a) });
+    }
+    prev = q.t2;
+  });
+  line(prev, O[5]);
+  const last = O[5], dl = nrm(O[4], O[5]);
+  out.push({ u: last[0], z: last[1], nu: -dl[1], nz: dl[0] });
+  let s = 0;
+  out.forEach((p, i) => { if (i) s += Math.hypot(p.u - out[i - 1].u, p.z - out[i - 1].z); p.s = s; });
+  let ir = 0; out.forEach((p, i) => { if (Math.abs(p.u - W / 2) < Math.abs(out[ir].u - W / 2)) ir = i; });
+  const d0 = nrm(O[0], O[1]), sg = (GB[0] - O[0][0]) * d0[0] + (GB[1] - O[0][1]) * d0[1];
+  return { pts: out, O, S: s, sup: [0, sg, out[marks[0]].s, out[ir].s, out[marks[3]].s, s - sg, s] };
+})();
+const XSUP = [0, ...BX, L];
+const span = (arr, v) => { for (let i = 0; i < arr.length - 1; i++) if (v <= arr[i + 1] || i === arr.length - 2) return [arr[i], arr[i + 1]]; };
+function sagSide(x, s) {
+  const [xa, xb] = span(XSUP, x), [sa, sb] = span(SEC.sup, s);
+  const tx = Math.min(1, Math.max(0, (x - xa) / (xb - xa))), ts = Math.min(1, Math.max(0, (s - sa) / (sb - sa)));
+  const roof = sa > SEC.sup[1] + 0.01 && sb < SEC.sup[5] - 0.01;
+  const base = (roof ? 0.013 : 0.005) * Math.min(xb - xa, sb - sa) * Math.sin(Math.PI * tx) * Math.sin(Math.PI * ts);
+  let near = BX[0]; for (const b of BX) if (Math.abs(x - b) < Math.abs(x - near)) near = b;
+  const dx = x - near, env = Math.exp(-((dx / 0.45) ** 2)) * Math.sin(Math.PI * ts) * (Math.abs(dx) > R ? 1 : Math.abs(dx) / R);
+  const ph = near * 3.1 + sa * 1.7, sg = dx >= 0 ? 1 : -1;
+  const wr = 0.0035 * env * Math.sin(2 * Math.PI * (s - sg * dx * 0.8) / 0.21 + ph) + 0.002 * env * Math.sin(2 * Math.PI * (s + sg * dx * 1.4) / 0.13 + ph * 2.3);
+  return base + wr;
+}
+const U0 = SEC.O[0][0], U1 = SEC.O[5][0];
+function zTop(u) {
+  const p = SEC.pts;
+  for (let i = 0; i < p.length - 1; i++) if (u <= p[i + 1].u) { const t = (u - p[i].u) / ((p[i + 1].u - p[i].u) || 1); return p[i].z + (p[i + 1].z - p[i].z) * t; }
+  return p[p.length - 1].z;
+}
+const sagEnd = (u, z) => { const zt = zTop(u); return zt > 0.01 ? 0.008 * Math.sin(Math.PI * (u - U0) / (U1 - U0)) * Math.sin(Math.PI * Math.min(1, z / zt)) : 0; };
+function wrinkleTexture() {
+  const N = 512, h = new Float32Array(N * N);
+  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let k = 0; k < 90; k++) {
+    const cx = rnd() * N, cy = rnd() * N, ang = rnd() * Math.PI, len = 30 + rnd() * 150, w = 2 + rnd() * 6, amp = (rnd() < 0.5 ? -1 : 1) * (0.4 + rnd() * 0.6);
+    const ca = Math.cos(ang), sa = Math.sin(ang), rr = Math.ceil(len / 2 + 3 * w);
+    for (let y = -rr; y <= rr; y++) for (let x = -rr; x <= rr; x++) {
+      const al = x * ca + y * sa, pe = -x * sa + y * ca;
+      if (Math.abs(al) > len / 2) continue;
+      const px = ((Math.round(cx + x) % N) + N) % N, py = ((Math.round(cy + y) % N) + N) % N;
+      h[py * N + px] += amp * Math.exp(-((pe / w) ** 2)) * Math.cos(Math.PI * al / len);
+    }
+  }
+  const cv = document.createElement("canvas"); cv.width = cv.height = N;
+  const ctx = cv.getContext("2d"), img = ctx.createImageData(N, N);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const dx = h[y * N + (x + 1) % N] - h[y * N + (x + N - 1) % N], dy = h[((y + 1) % N) * N + x] - h[((y + N - 1) % N) * N + x];
+    let nx = -dx * 0.6, ny = -dy * 0.6, nz = 1; const l = Math.hypot(nx, ny, nz); nx /= l; ny /= l; nz /= l;
+    const i = (y * N + x) * 4; img.data[i] = (nx * 0.5 + 0.5) * 255; img.data[i + 1] = (ny * 0.5 + 0.5) * 255; img.data[i + 2] = (nz * 0.5 + 0.5) * 255; img.data[i + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8;
+  return t;
+}
+const coverMat = new THREE.MeshStandardMaterial({ color: 0xe0601f, roughness: 0.55, side: THREE.DoubleSide, envMapIntensity: 0.55, normalMap: wrinkleTexture(), normalScale: new THREE.Vector2(0.45, 0.45) });
+const darkMat = new THREE.MeshStandardMaterial({ color: 0x2c2f33, roughness: 0.8, side: THREE.DoubleSide });
+const flapMat = new THREE.MeshStandardMaterial({ color: 0xc4501b, roughness: 0.6, side: THREE.DoubleSide });
+const doorMat = new THREE.MeshStandardMaterial({ color: 0xcd5821, roughness: 0.58, side: THREE.DoubleSide, normalMap: coverMat.normalMap, normalScale: new THREE.Vector2(0.35, 0.35) });
+const glassMat = new THREE.MeshStandardMaterial({ color: 0xb9d2df, roughness: 0.1, metalness: 0.2, envMapIntensity: 1.4, side: THREE.DoubleSide });
+const pocketMat = new THREE.MeshStandardMaterial({ color: 0xf1f4f6, roughness: 0.2, transparent: true, opacity: 0.88, side: THREE.DoubleSide });
+const metalMat = new THREE.MeshStandardMaterial({ color: 0xc3c8cd, roughness: 0.3, metalness: 0.85 });
+const sleeveMat = new THREE.MeshStandardMaterial({ color: 0xdb5d1e, roughness: 0.55, side: THREE.DoubleSide });
+const velcroMat = new THREE.MeshStandardMaterial({ color: 0x3a3d41, roughness: 0.97, side: THREE.DoubleSide });
+const bandMat = new THREE.MeshStandardMaterial({ color: 0xbf4a17, roughness: 0.6, side: THREE.DoubleSide });
+const FEAT_MATS = [[darkMat, 1], [flapMat, 1], [doorMat, 1], [glassMat, 1], [pocketMat, 0.88], [metalMat, 1], [sleeveMat, 1], [velcroMat, 1], [bandMat, 1]];
+const cover = new THREE.Group(), feats = new THREE.Group();
+const meshOf = (g, mat) => { const m = new THREE.Mesh(g, mat); m.castShadow = true; m.receiveShadow = true; return m; };
+function gridGeo(nu, nv, f, skip) {
+  const pos = [], uv = [], idx = [];
+  for (let j = 0; j <= nv; j++) for (let i = 0; i <= nu; i++) { const [p, a, b] = f(i, j); pos.push(p.x, p.y, p.z); uv.push(a, b); }
+  for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { if (skip && skip(i, j)) continue; const a = j * (nu + 1) + i, b = a + 1, c = a + nu + 1, d = c + 1; idx.push(a, b, d, a, d, c); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+  g.setIndex(idx); g.computeVertexNormals(); return g;
+}
+{
+  const O = SEC.O, dB = [(O[1][0] - O[0][0]), (O[1][1] - O[0][1])], lB = Math.hypot(...dB), dA = [(O[4][0] - O[5][0]), (O[4][1] - O[5][1])], lA = Math.hypot(...dA);
+  const slOf = z => z * lB / dB[1];
+  for (const z of [CUT.z0, CUT.z1]) {
+    const sl = slOf(z);
+    SEC.pts.push({ u: O[0][0] + dB[0] / lB * sl, z, nu: -dB[1] / lB, nz: dB[0] / lB, s: sl });
+    SEC.pts.push({ u: O[5][0] + dA[0] / lA * sl, z, nu: dA[1] / lA, nz: -dA[0] / lA, s: SEC.S - sl });
+  }
+  SEC.pts.sort((a, b) => a.s - b.s);
+  const HOLES = [[CUT.x0, CUT.x1, SEC.S - slOf(CUT.z1), SEC.S - slOf(CUT.z0)], [L - CUT.x1, L - CUT.x0, slOf(CUT.z0), slOf(CUT.z1)]];
+  const xs = [...new Set([...Array.from({ length: 181 }, (_, i) => i * L / 180), ...BX, CUT.x0, CUT.x1, L - CUT.x1, L - CUT.x0])].sort((a, b) => a - b), sp = SEC.pts;
+  cover.add(meshOf(gridGeo(xs.length - 1, sp.length - 1, (i, j) => {
+    const x = xs[i], p = sp[j], sg = sagSide(x, p.s);
+    return [P(x, p.u - p.nu * sg, p.z - p.nz * sg), x / 2.4, p.s / 2.4];
+  }, (i, j) => {
+    const xm = (xs[i] + xs[i + 1]) / 2, sm = (sp[j].s + sp[j + 1].s) / 2;
+    return HOLES.some(([a0, a1, s0, s1]) => xm > a0 && xm < a1 && sm > s0 && sm < s1);
+  }), coverMat));
+  for (const [x0, dir] of [[-0.004, 1], [L + 0.004, -1]]) {
+    cover.add(meshOf(gridGeo(sp.length - 1, 30, (i, j) => {
+      const u = sp[i].u, z = sp[i].z * j / 30;
+      return [P(x0 + dir * sagEnd(u, z), u, z), u / 2.4, z / 2.4];
+    }), coverMat));
+  }
+}
+const floorIn = meshOf(new THREE.PlaneGeometry(L - 0.02, W - 2 * (GB[0] + R)), new THREE.MeshStandardMaterial({ color: 0xb4b9be, roughness: 0.85 }));
+floorIn.rotation.x = -Math.PI / 2; floorIn.position.y = 0.006;
+const FR = {};
+for (const side of ["A", "B"]) {
+  const O = SEC.O, g0 = side === "A" ? O[5] : O[0], g1 = side === "A" ? O[4] : O[1];
+  const l = Math.hypot(g1[0] - g0[0], g1[1] - g0[1]), du = (g1[0] - g0[0]) / l, dz = (g1[1] - g0[1]) / l;
+  const n = new THREE.Vector3(0, side === "A" ? -du : du, side === "A" ? dz : -dz), eb = new THREE.Vector3(0, dz, du);
+  FR[side] = { n, eb, ea: new THREE.Vector3(1, 0, 0),
+    pt: (x, z, off = 0) => {
+      const sl = (z - g0[1]) / dz, s = side === "A" ? SEC.S - sl : sl;
+      return P(x, g0[0] + du * sl, z).addScaledVector(n, off - sagSide(x, s));
+    } };
+}
+FR.F = { n: new THREE.Vector3(-1, 0, 0), eb: new THREE.Vector3(0, 1, 0), ea: new THREE.Vector3(0, 0, 1), pt: (u, z, off = 0) => P(-0.004 + sagEnd(u, z) - off, u, z) };
+FR.K = { n: new THREE.Vector3(1, 0, 0), eb: new THREE.Vector3(0, 1, 0), ea: new THREE.Vector3(0, 0, 1), pt: (u, z, off = 0) => P(L + 0.004 - sagEnd(u, z) + off, u, z) };
+const rectF = (fr, a0, a1, b0, b1, mat, off, n = 8) => meshOf(gridGeo(n, n, (i, j) => [fr.pt(a0 + (a1 - a0) * i / n, b0 + (b1 - b0) * j / n, off), i / n, j / n]), mat);
+function roll(fr, a0, a1, b, r, mat) {
+  const m = meshOf(new THREE.CylinderGeometry(r, r, Math.abs(a1 - a0), 24), mat);
+  m.position.copy(fr.pt((a0 + a1) / 2, b, r + 0.006));
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), fr.ea);
+  return m;
+}
+function windowF(fr, a0, a1, b0, b1) {
+  const w = 0.035;
+  feats.add(rectF(fr, a0 - w, a1 + w, b0 - w, b1 + w, darkMat, 0.006));
+  feats.add(rectF(fr, a0, a1, b0, b1, glassMat, 0.009));
+  feats.add(roll(fr, a0 - w, a1 + w, b1 + w + 0.03, 0.03, flapMat));
+  for (const a of [a0 + 0.07, a1 - 0.07]) feats.add(rectF(fr, a - 0.012, a + 0.012, b1 - 0.02, b1 + w + 0.07, darkMat, 0.068, 2));
+}
+function pocketF(fr, a0, a1, b0, b1) {
+  feats.add(rectF(fr, a0 - 0.012, a1 + 0.012, b0 - 0.012, b1 + 0.012, darkMat, 0.006));
+  feats.add(rectF(fr, a0, a1, b0, b1, pocketMat, 0.009));
+}
+const PORT = { F: 0.06, V: 0.05, g: 0.005, fw: 0.44, fh: 0.46, zh: CUT.z1 + 0.09, rr: 0.03 };
+const portCommon = new THREE.Group(), portOpenG = new THREE.Group(), portClosedG = new THREE.Group(), portAnch = {};
+function portBuild(fr, mx, side) {
+  const xa = [mx(CUT.x0), mx(CUT.x1)], x0 = Math.min(...xa), x1 = Math.max(...xa), z0 = CUT.z0, z1 = CUT.z1, { F, V, g, fw, fh, zh, rr } = PORT;
+  const xc = (x0 + x1) / 2, fx0 = xc - fw / 2, fx1 = xc + fw / 2, zb = zh - fh;
+  const tx = side === "A" ? fx1 - 0.07 : fx0 + 0.07;
+  for (const [a0, a1, b0, b1] of [[x0 - F, x0, z0 - F, z1 + F], [x1, x1 + F, z0 - F, z1 + F], [x0, x1, z0 - F, z0], [x0, x1, z1, z1 + F]])
+    portCommon.add(rectF(fr, a0, a1, b0, b1, bandMat, 0.004, 4));
+  portCommon.add(rectF(fr, fx0, fx1, zh - 0.04, zh, flapMat, 0.008, 4));
+  for (const [a0, a1, b0, b1] of [[x0 - g - V, x0 - g, z0 - g - V, z1], [x1 + g, x1 + g + V, z0 - g - V, z1], [x0 - g - V, x1 + g + V, z0 - g - V, z0 - g]])
+    portOpenG.add(rectF(fr, a0, a1, b0, b1, velcroMat, 0.0065, 4));
+  const bump = (a, b) => 0.05 * Math.exp(-(((a - xc) / 0.12) ** 2)) * Math.pow(Math.max(0, Math.sin(Math.PI * (b - zb) / (zh - zb))), 0.6);
+  portClosedG.add(meshOf(gridGeo(18, 18, (i, j) => {
+    const a = fx0 + (fx1 - fx0) * i / 18, b = zb + (zh - zb) * j / 18;
+    return [fr.pt(a, b, 0.012 + bump(a, b)), i / 18, j / 18];
+  }), flapMat));
+  portClosedG.add(rectF(fr, tx - 0.0125, tx + 0.0125, zb - 0.06, zb + 0.025, darkMat, 0.016, 2));
+  for (const sx of [fx0 + 0.05, fx1 - 0.05]) portClosedG.add(rectF(fr, sx - 0.0125, sx + 0.0125, zh + 0.01, zh + 0.13, darkMat, 0.01, 2));
+  portOpenG.add(roll(fr, fx0, fx1, zh - 0.04 + rr, rr, flapMat));
+  for (const sx of [fx0 + 0.05, fx1 - 0.05]) portOpenG.add(rectF(fr, sx - 0.0125, sx + 0.0125, zh - 0.045, zh + 0.13, darkMat, 2 * rr + 0.014, 2));
+  portAnch[side] = { band: fr.pt(x1 + F, z1 + F * 0.5, 0.01), vel: fr.pt(x0 - g - V / 2, z0 + 0.12, 0.01), roll: fr.pt(fx1 - 0.08, zh - 0.04 + rr, 2 * rr + 0.01),
+    flap: fr.pt(fx1, zh - 0.12, 0.02), hook: fr.pt(fx0, zh - 0.12, 0.02), bumpP: fr.pt(xc, z0 + 0.12, 0.012 + bump(xc, z0 + 0.12)), tab: fr.pt(tx, zb - 0.04, 0.02), strap: fr.pt(fx1 - 0.05, zh + 0.1, 0.012) };
+}
+function portF(fr, a0, a1, b0, b1) {
+  feats.add(rectF(fr, a0 - 0.03, a1 + 0.03, b0 - 0.03, b1 + 0.03, darkMat, 0.006));
+  feats.add(rectF(fr, a0, a1, b0, b1, flapMat, 0.01));
+}
+function doorF(fr, a0, a1) {
+  const b0 = DOOR.sill, b1 = DOOR.sill + DOOR.h, w = 0.03, am = (a0 + a1) / 2;
+  feats.add(rectF(fr, a0 - w, a1 + w, b0 - w, b1 + w, darkMat, 0.006, 12));
+  feats.add(rectF(fr, a0, a1, b0, b1, doorMat, 0.009, 12));
+  feats.add(rectF(fr, am - 0.01, am + 0.01, b0, b1, darkMat, 0.012, 12));
+  feats.add(roll(fr, a0 - w, a1 + w, b1 + w + 0.05, 0.05, flapMat));
+  for (const k of [0.12, 0.5, 0.88]) {
+    const a = a0 + (a1 - a0) * k;
+    feats.add(rectF(fr, a - 0.022, a + 0.022, b1 - 0.03, b1 + w + 0.12, darkMat, 0.108, 2));
+  }
+  feats.add(rectF(fr, a0 - w, a1 + w, b0 - w, b1 + w, darkMat, -0.006, 12));
+  feats.add(rectF(fr, a0, a1, b0, b1, doorMat, -0.009, 12));
+  feats.add(rectF(fr, am - 0.01, am + 0.01, b0, b1, darkMat, -0.012, 12));
+}
+function sleeveF(fr, a, b, d) {
+  const r = d / 2, len = 0.12, g = new THREE.Group();
+  const tube = meshOf(new THREE.CylinderGeometry(r, r, len, 40, 1, true), sleeveMat); tube.position.y = len / 2; g.add(tube);
+  const cap = meshOf(new THREE.CircleGeometry(r, 40), flapMat); cap.rotation.x = -Math.PI / 2; cap.position.y = len; g.add(cap);
+  const lip = meshOf(new THREE.TorusGeometry(r, Math.max(0.012, r * 0.12), 12, 40), sleeveMat); lip.rotation.x = Math.PI / 2; lip.position.y = len; g.add(lip);
+  const tie = meshOf(new THREE.TorusGeometry(r * 1.01, 0.006, 6, 40), darkMat); tie.rotation.x = Math.PI / 2; tie.position.y = len * 0.5; g.add(tie);
+  g.position.copy(fr.pt(a, b, 0.002));
+  g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), fr.n);
+  feats.add(g);
+}
+function dringF(fr, a, b) {
+  feats.add(rectF(fr, a - 0.018, a + 0.018, b - 0.035, b + 0.025, darkMat, 0.007, 2));
+  const ring = meshOf(new THREE.TorusGeometry(0.024, 0.004, 8, 24, Math.PI), metalMat);
+  ring.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(fr.eb, fr.n, new THREE.Vector3().crossVectors(fr.eb, fr.n)));
+  ring.position.copy(fr.pt(a, b, 0.009));
+  feats.add(ring);
+}
+for (const [fr, mu] of [[FR.F, u => u], [FR.K, u => W - u]]) {
+  doorF(fr, (W - DOOR.w) / 2, (W + DOOR.w) / 2);
+  const wu = [mu(END_WIN_U[0]), mu(END_WIN_U[1])].sort((p, q) => p - q), pu = [mu(END_PK_U[0]), mu(END_PK_U[1])].sort((p, q) => p - q);
+  windowF(fr, wu[0], wu[1], END_WIN_ZC - EW / 2, END_WIN_ZC + EW / 2);
+  pocketF(fr, pu[0], pu[1], PK.zc - PK.h / 2, PK.zc + PK.h / 2);
+  for (const u of [0.4, W - 0.4]) dringF(fr, u, 0.1);
+}
+for (const [s, mx] of [["A", x => x], ["B", x => L - x]]) {
+  const fr = FR[s], two = (a, b) => [mx(a), mx(b)].sort((p, q) => p - q);
+  for (const x of SW_X) windowF(fr, ...two(x, x + SWN), SW_Z[0], SW_Z[1]);
+  pocketF(fr, ...two(SP_X, SP_X + PK.w), PK.zc - PK.h / 2, PK.zc + PK.h / 2);
+  portBuild(fr, mx, s);
+  for (const x of OUT_X) sleeveF(fr, mx(x), SLV_Z, 0.4);
+  for (const x of CAB_X) sleeveF(fr, mx(x), SLV_Z, 0.15);
+  for (const x of DR_X) for (const z of DR_Z) dringF(fr, mx(x), z);
+}
+const dins = new THREE.Group(), ARCH_IN = offsetIn(OUTL, D);
+function archIn(du) {
+  const u = W / 2 + du;
+  for (let i = 1; i < 4; i++) {
+    const [u1, z1] = ARCH_IN[i], [u2, z2] = ARCH_IN[i + 1];
+    if (u >= u1 && u <= u2) {
+      const l = Math.hypot(u2 - u1, z2 - z1);
+      return [u, z1 + (z2 - z1) * (u - u1) / (u2 - u1), new THREE.Vector3(0, -(u2 - u1) / l, (z2 - z1) / l)];
+    }
+  }
+}
+function dringArch(p, n) {
+  const ex = new THREE.Vector3(1, 0, 0), down = new THREE.Vector3(0, -1, 0);
+  const tab = meshOf(new THREE.BoxGeometry(0.036, 0.006, 0.06), darkMat);
+  tab.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(ex, n, new THREE.Vector3().crossVectors(ex, n)));
+  tab.position.copy(p).addScaledVector(n, 0.003); dins.add(tab);
+  const ring = meshOf(new THREE.TorusGeometry(0.026, 0.0045, 8, 24, Math.PI), metalMat);
+  ring.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(ex, down, new THREE.Vector3().crossVectors(ex, down)));
+  ring.position.copy(p).addScaledVector(n, 0.006).addScaledVector(down, 0.012); dins.add(ring);
+  return p.clone().addScaledVector(down, 0.05);
+}
+const ARCHP = BX.map(x => IN_DU.map(du => { const [u, z, n] = archIn(du); return dringArch(P(x, u, z), n); }));
+const inLight = new THREE.PointLight(0xffffff, 1.4, 0, 0);
+inLight.position.copy(P(L / 2, W / 2, 2.1));
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.9;
+document.body.appendChild(renderer.domElement);
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(innerWidth, innerHeight);
+Object.assign(labelRenderer.domElement.style, { position: "fixed", left: "0", top: "0", pointerEvents: "none", zIndex: "1" });
+document.body.appendChild(labelRenderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf4f5f6);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a9096, 0.35));
+const sun = new THREE.DirectionalLight(0xffffff, 2.1);
+sun.position.set(-5, 10, 6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -7, right: 7, top: 7, bottom: -7, near: 1, far: 30 });
+sun.shadow.bias = -0.0004;
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0xffffff, 0.45);
+fill.position.set(6, 4, -5);
+scene.add(fill);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 12), new THREE.MeshStandardMaterial({ color: 0xe1e4e7, roughness: 0.95 }));
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor, frame, coverLines, coverPatch, cover, feats, floorIn, inLight, dins, portCommon, portOpenG, portClosedG);
+const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.02, 100);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+const tags = [];
+const LANG0 = "en";
+const LANGQ = (l => ["zh", "en", "pl"].includes(l) ? l : LANG0)(new URLSearchParams(location.hash.slice(1)).get("lang"));
+const PL_TAG = {"Mitre seam (weld tape over it)": "Szew skośny (pod taśmą zgrzewaną)", "Eave beam T-joined here": "Tu belka okapowa połączona w T", "Leg of arch 1": "Noga łuku 1", "Roof slope": "Skos dachu", "Mitre seam": "Szew skośny", "Ridge beam T-joined from both sides": "Belka kalenicowa w T z obu stron", "T-joint: leg welded onto the ground beam": "Złącze T: noga zgrzana z belką przyziemną", "Eave beam": "Belka okapowa", "Leg": "Noga", "V inflation valve (top)": "V zawór do pompowania (u góry)", "S safety valve (below)": "S zawór bezpieczeństwa (niżej)", "Opening 300 x 300, 60 band round it": "Otwór 300 x 300, wokół pas 60", "Loop velcro 50 wide: left, right, bottom": "Rzep z pętelkami 50: lewo, prawo, dół", "Flap rolled up, held by 2 straps": "Klapa zwinięta, trzymana 2 paskami", "V inflation valve, centre 490": "V zawór do pompowania, środek 490", "S safety valve, centre 360": "S zawór bezpieczeństwa, środek 360", "Flap 440 x 460, top edge welded": "Klapa 440 x 460, góra zgrzana", "Hook velcro on 3 sides inside the flap": "Spód klapy: rzep z haczykami", "Valves push the flap out 4-5 cm": "Zawory wypychają klapę o 4-5 cm", "Pull tab: to find the valves after packing": "Uchwyt – łatwo znaleźć zawory", "2 straps for the rolled flap": "2 paski do zwiniętej klapy", "Arch 1": "Łuk 1", "Arch 2": "Łuk 2", "Arch 3": "Łuk 3", "Arch 4": "Łuk 4", "V + S (arch 1, side A)": "V + S (łuk 1, bok A)", "Ridge beam": "Belka kalenicowa", "Ground beam (one piece)": "Belka przyziemna (w całości)", "Tube seam faces the cover": "Szew rury od strony poszycia", "Ground beam: one piece, rounded ends": "Belka przyziemna: w całości, końce zaokrąglone", "Leg T-joined onto the ground beam": "Noga w T na belce przyziemnej", "Seam faces the cover": "Szew od strony poszycia", "1 Door 1600 x 2000 (threshold 150)": "1 Drzwi 1600 x 2000 (próg 150)", "3 End window 300 x 300": "3 Okno czołowe 300 x 300", "4 A4 pocket (beside door)": "4 Kieszeń A4 (przy drzwiach)", "2 Side window 500 x 500": "2 Okno boczne 500 x 500", "4 A4 pocket (between windows)": "4 Kieszeń A4 (między oknami)", "5 Valve access (valves inside)": "5 Otwór serwisowy (zawory pod klapą)", "6 Air outlet Ø400": "6 Otwór wentylacyjny Ø400", "7 Cable entry Ø150": "7 Przepust kablowy Ø150", "8 D-rings": "8 Kółka D", "1 Door 1600 x 2000": "1 Drzwi 1600 x 2000", "4 A4 pocket": "4 Kieszeń A4", "8 D-ring": "8 Kółko D", "1 Back door": "1 Drzwi tylne", "5 Valve access (side B, back end, opposite corner)": "5 Otwór serwisowy (bok B, tył)", "Side B": "Bok B", "2 Window": "2 Okno", "4 Pocket": "4 Kieszeń", "5 Valve access": "5 Otwór serwisowy", "6 Outlet Ø400": "6 Otwór Ø400", "7 Cable Ø150": "7 Przepust Ø150", "Removable floor (light grey)": "Podłoga zdejmowana (jasnoszara)", "Air beams against the cover": "Belki przylegają do poszycia", "Back door (inside)": "Drzwi tylne (od środka)", "Inner D-rings (light loads only)": "Kółka D wewn. (tylko lekkie obciążenia)", "6 inner D-rings on each arch, all 4 the same": "Po 6 kółek D na każdym z 4 łuków", "About 1920 / 2170 / 2400 above floor, both sides": "Ok. 1920 / 2170 / 2400 od podłogi", "None on the eave and ridge beams": "Brak na belkach okapowych i kalenicowej", "Light loads only: cables, lamps, partitions": "Tylko lekkie rzeczy: kable, lampy, ścianki", "Cover = outer edge of arches, beams fixed inside": "Poszycie = krawędź łuków, belki od środka", "Transparent cover": "Poszycie przezroczyste"};
+let TAGKIND = "beam";
+function tag(text, p, views, left = false) {
+  if (Array.isArray(text)) text = LANGQ === "en" ? text[1] : LANGQ === "pl" ? (PL_TAG[text[1]] || text[1]) : text[0];
+  const kind = TAGKIND;
+  const el = document.createElement("div");
+  el.className = "tag" + (left ? " l" : "");
+  el.innerHTML = `<i></i><em></em><span>${text}</span>`;
+  const o = new CSS2DObject(el);
+  o.center.set(left ? 1 : 0, 0.5);
+  o.position.copy(p);
+  o.userData.views = views; o.userData.kind = kind;
+  scene.add(o);
+  tags.push(o);
+}
+const eaveA0 = anchors.eaveA_0_s, ridge2 = anchors.ridge_1_e, groundA1 = anchors.groundA_1_s, eaveA1 = anchors.eaveA_1_s;
+tag(["斜接焊缝（焊带压缝）", "Mitre seam (weld tape over it)"], anchors.miter1_4, ["eave"], true);
+tag(["檐口纵向气柱 T 形接入", "Eave beam T-joined here"], eaveA0(M / 2), ["eave"]);
+tag(["1 号立柱", "Leg of arch 1"], P(BX[0] + R, W - 0.4, 1.05), ["eave"], true);
+tag(["斜顶", "Roof slope"], P(BX[0] + R, 4.05, 2.05), ["eave"], true);
+tag(["斜接焊缝", "Mitre seam"], anchors.miterB3_2, ["apex"], true);
+tag(["斜接焊缝", "Mitre seam"], anchors.miterB3_3, ["apex"]);
+tag(["平顶纵向气柱从两边 T 形接入", "Ridge beam T-joined from both sides"], ridge2(M / 2), ["apex"]);
+tag(["T 形接口：立柱下端焊在地面纵向气柱上", "T-joint: leg welded onto the ground beam"], anchors.foot3_A, ["foot"]);
+tag(["檐口纵向气柱", "Eave beam"], P(3.6, W - EB[0] - R, EB[1] + 0.05), ["foot"], true);
+tag(["立柱", "Leg"], P(BX[1] + R, W - 0.45, 1.0), ["foot"]);
+tag(["V 充放气阀（在上）", "V inflation valve (top)"], anchors[`valve_${BX[0]}_V`], ["valve"]);
+tag(["S 安全阀（在下）", "S safety valve (below)"], anchors[`valve_${BX[0]}_S`], ["valve"]);
+TAGKIND = "port";
+const PA = portAnch.A, ptag = (t, p, open, left) => { tag(t, p, ["valve"], left); tags[tags.length - 1].userData.open = open; };
+ptag(["开口 300 × 300，四周加强边 60 宽", "Opening 300 x 300, 60 band round it"], PA.band, true);
+ptag(["毛面魔术贴 50 宽：左、右、下三边", "Loop velcro 50 wide: left, right, bottom"], PA.vel, true, true);
+ptag(["盖片卷起，2 条带子扣住", "Flap rolled up, held by 2 straps"], PA.roll, true);
+ptag([`V 充放气阀，中心离地 ${Math.round(VZ * 1000)}`, `V inflation valve, centre ${Math.round(VZ * 1000)}`], anchors[`valve_${BX[0]}_V`], true);
+ptag([`S 安全阀，中心离地 ${Math.round(SZ * 1000)}`, `S safety valve, centre ${Math.round(SZ * 1000)}`], anchors[`valve_${BX[0]}_S`], true);
+ptag(["盖片 440 × 460，上边焊死", "Flap 440 x 460, top edge welded"], PA.flap, false);
+ptag(["盖片里面三边是钩面魔术贴", "Hook velcro on 3 sides inside the flap"], PA.hook, false, true);
+ptag(["阀门把盖片顶起约 4–5 cm", "Valves push the flap out 4-5 cm"], PA.bumpP, false, true);
+ptag(["拉手：打包后好找阀门", "Pull tab: to find the valves after packing"], PA.tab, false);
+ptag(["2 条带子：卷起盖片时用", "2 straps for the rolled flap"], PA.strap, false);
+TAGKIND = "beam";
+for (let k = 0; k < 4; k++) tag([`${k + 1} 号`, `Arch ${k + 1}`], P(BX[k], W / 2, RZ + 0.05), ["main", "cghost"]);
+tag(["V + S（1 号，侧面 A）", "V + S (arch 1, side A)"], anchors[`valve_${BX[0]}_V`], ["main", "cghost"]);
+tag(["檐口纵向", "Eave beam"], P(3.6, W - EB[0], EB[1] + R), ["main"]);
+tag(["地面纵向（一整根）", "Ground beam (one piece)"], P(3.6, W - GB[0], R * 2), ["main"]);
+tag(["卷管纵向焊缝朝外罩", "Tube seam faces the cover"], anchors.seam2_4, ["main"]);
+tag(["地面纵向气柱一整根，两头圆头封口", "Ground beam: one piece, rounded ends"], anchors.groundB_cap, ["corner"], true);
+tag(["卷管纵向焊缝朝外罩", "Tube seam faces the cover"], anchors.seam1_0, ["corner"]);
+tag(["立柱下端 T 接在地面纵向气柱上", "Leg T-joined onto the ground beam"], anchors.foot1_B, ["corner"]);
+tag(["纵向焊缝朝外罩", "Seam faces the cover"], anchors.groundB_mid(1.6), ["corner"]);
+TAGKIND = "cover";
+const sideMid = (fr, a, b, off = 0.02) => fr.pt(a, b, off);
+tag(["1 门 1600 × 2000（门槛 150）", "1 Door 1600 x 2000 (threshold 150)"], sideMid(FR.F, W / 2 - 0.3, 1.0), ["cmain"], true);
+tag(["3 端窗 300 × 300", "3 End window 300 x 300"], sideMid(FR.F, END_WIN_U[0], END_WIN_ZC + EW / 2 + 0.2), ["cmain"], true);
+tag(["4 A4 文件袋（门旁）", "4 A4 pocket (beside door)"], sideMid(FR.F, END_PK_U[1], PK.zc), ["cmain"]);
+tag(["2 侧窗 500 × 500", "2 Side window 500 x 500"], sideMid(FR.A, SW_X[1] + 0.25, SW_Z[1] + 0.1), ["cmain"]);
+tag(["4 A4 文件袋（两窗之间）", "4 A4 pocket (between windows)"], sideMid(FR.A, SP_X + 0.35, PK.zc), ["cmain"]);
+tag(["5 气阀检修口（阀门在里面）", "5 Valve access (valves inside)"], sideMid(FR.A, CUT.x1, CUT.z1), ["cmain"]);
+tag(["6 通风口 Ø400", "6 Air outlet Ø400"], sideMid(FR.A, OUT_X[0] - 0.2, SLV_Z, 0.14), ["cmain"], true);
+tag(["7 电缆口 Ø150", "7 Cable entry Ø150"], sideMid(FR.A, CAB_X[1] + 0.08, SLV_Z, 0.13), ["cmain"]);
+tag(["8 D 环", "8 D-rings"], sideMid(FR.A, DR_X[4], DR_Z[0]), ["cmain"]);
+tag(["1 门 1600 × 2000", "1 Door 1600 x 2000"], sideMid(FR.F, W / 2 - 0.25, 0.9), ["cfront"], true);
+tag(["3 端窗 300 × 300", "3 End window 300 x 300"], sideMid(FR.F, END_WIN_U[0], END_WIN_ZC + 0.1), ["cfront"], true);
+tag(["4 A4 文件袋", "4 A4 pocket"], sideMid(FR.F, END_PK_U[1], PK.zc + 0.05), ["cfront"]);
+tag(["8 D 环", "8 D-ring"], sideMid(FR.F, W - 0.4, 0.1), ["cfront"]);
+tag(["1 后门（2 号门）", "1 Back door"], sideMid(FR.K, W / 2 + 0.3, 1.0), ["cback"]);
+tag(["5 检修口（侧面 B 后端，和侧面 A 对角）", "5 Valve access (side B, back end, opposite corner)"], sideMid(FR.B, L - CUT.x0, CUT.z0), ["cback"]);
+tag(["侧面 B", "Side B"], sideMid(FR.B, 3.6, 1.15), ["cback"], true);
+tag(["外罩半透明", "Transparent cover"], P(3.6, W - 1.25, EZ + 0.42), ["cghost"]);
+tag(["外罩外形 = 拱形气柱外边，气柱和外罩固定", "Cover = outer edge of arches, beams fixed inside"], P(1.2, W - EI * 1.2 / EZ, 1.2), ["cghost"]);
+tag(["2 侧窗", "2 Window"], sideMid(FR.A, SW_X[0] + 0.25, SW_Z[1] + 0.12), ["cside"]);
+tag(["4 文件袋", "4 Pocket"], sideMid(FR.A, SP_X + 0.35, PK.zc + 0.06), ["cside"]);
+tag(["5 检修口", "5 Valve access"], sideMid(FR.A, CUT.x1, CUT.z1), ["cside"]);
+tag(["6 通风口 Ø400", "6 Outlet Ø400"], sideMid(FR.A, OUT_X[0] + 0.2, SLV_Z + 0.12, 0.14), ["cside"]);
+tag(["7 电缆口 Ø150", "7 Cable Ø150"], sideMid(FR.A, CAB_X[0] + 0.08, SLV_Z + 0.06, 0.13), ["cside"]);
+tag(["8 D 环", "8 D-ring"], sideMid(FR.A, DR_X[2], DR_Z[1]), ["cside"]);
+tag(["可拆地板（浅灰色）", "Removable floor (light grey)"], P(4.4, W / 2 - 0.7, 0.02), ["cin"]);
+tag(["气柱贴着外罩里面", "Air beams against the cover"], P(BX[1] + R, 0.75, 1.15), ["cin"]);
+tag(["后门（里面看）", "Back door (inside)"], P(L - 0.02, W / 2 + 0.4, 1.3), ["cin"]);
+tag(["里面 D 环（只挂轻物）", "Inner D-rings (light loads only)"], ARCHP[2][4], ["cin"]);
+TAGKIND = "beam";
+const IN_Z = IN_DU.slice(0, 3).map(d => Math.round(archIn(d)[1] * 100) * 10);
+tag(["每根拱形里面 6 个 D 环，4 根一样", "6 inner D-rings on each arch, all 4 the same"], ARCHP[3][4], ["din"]);
+tag([`离地约 ${IN_Z[0]} / ${IN_Z[1]} / ${IN_Z[2]}，左右对称`, `About ${IN_Z[0]} / ${IN_Z[1]} / ${IN_Z[2]} above floor, both sides`], ARCHP[1][2], ["din"], true);
+tag(["檐口、平顶的纵向气柱上不装", "None on the eave and ridge beams"], P((BX[1] + BX[2]) / 2, W / 2, RB[1] - R), ["din"]);
+tag(["只挂轻物：走电线、挂灯、挂布隔断", "Light loads only: cables, lamps, partitions"], P(BX[1], 1.25, 1.35), ["din"]);
+const dimMat = new THREE.LineBasicMaterial({ color: 0x1d2733 }), dimItems = [];
+function dimText(text, p, views, beam) {
+  const el = document.createElement("div"); el.className = "dim"; el.textContent = tr(text);
+  const o = new CSS2DObject(el); o.position.copy(p); o.userData = { views, beam }; scene.add(o); dimItems.push(o);
+}
+function chain(pts, labels, tick, lab, views, beam = false) {
+  const seg = [];
+  for (let i = 0; i < pts.length - 1; i++) seg.push(pts[i], pts[i + 1]);
+  for (const p of pts) seg.push(p.clone().addScaledVector(tick, -0.06), p.clone().addScaledVector(tick, 0.06));
+  const l = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(seg), dimMat);
+  l.userData = { views, beam }; scene.add(l); dimItems.push(l);
+  labels.forEach((t, i) => { if (t !== "") dimText(t, pts[i].clone().add(pts[i + 1]).multiplyScalar(0.5).add(lab), views, beam); });
+}
+const mm = v => String(Math.round(v * 1000));
+const DT = { "外侧 D 环列距": "Outer D-ring columns", "（通风口、电缆口量到中心）": "(outlets and cable entries to centre)", "离地高度": "Height above ground",
+  "D 环": "D-ring", "检修口底": "valve access bottom", "通风口、电缆口中心": "outlet / cable centre", "侧窗底": "window bottom", "侧窗顶": "window top",
+  "文件袋中心": "pocket centre", "檐口": "eave", "（门高）": " (door)", "门槛 ": "Threshold ", "（中心）": " (centre)" };
+const DT_PL = {"外侧 D 环列距": "Kolumny kółek D", "（通风口、电缆口量到中心）": "(otwory i przepusty – do środka)", "离地高度": "Wysokość od podłoża", "D 环": "kółko D", "检修口底": "dół otworu serwisowego", "通风口、电缆口中心": "środek otworu / przepustu", "侧窗底": "dół okna", "侧窗顶": "góra okna", "文件袋中心": "środek kieszeni", "檐口": "okap", "（门高）": " (drzwi)", "门槛 ": "Próg ", "（中心）": " (środek)"};
+const tr = t => LANGQ === "zh" ? t : Object.entries(LANGQ === "pl" ? DT_PL : DT).reduce((a, [k, v]) => a.split(k).join(v), t);
+const diffs = a => a.slice(1).map((v, i) => mm(v - a[i]));
+{
+  const fr = FR.A, up = fr.eb.clone().multiplyScalar(0.07), V = ["cside"];
+  const row = (xs, z) => xs.map(x => fr.pt(x, z, 0.05));
+  let xs = [0, ...DR_X, L]; chain(row(xs, 1.86), diffs(xs), fr.eb, up, V);
+  dimText("外侧 D 环列距", fr.pt(L / 2, 1.86, 0.05).add(fr.eb.clone().multiplyScalar(0.2)), V);
+  xs = [0, SW_X[0], SW_X[0] + SWN, SP_X, SP_X + PK.w, SW_X[1], SW_X[1] + SWN, L]; chain(row(xs, 1.47), diffs(xs), fr.eb, up, V);
+  xs = [0, CUT.x0, CUT.x1, CAB_X[0], OUT_X[0], OUT_X[1], CAB_X[1], L]; chain(row(xs, 0.03), diffs(xs), fr.eb, up, V);
+  dimText("（通风口、电缆口量到中心）", fr.pt(L / 2, 0.03, 0.05).add(new THREE.Vector3(0, -0.13, 0)), V);
+  const xr = L + 0.25, lv = [[0, ""], [DR_Z[0], "D 环"], [CUT.z0, "检修口底"], [SLV_Z, "通风口、电缆口中心"], [SW_Z[0], "侧窗底"], [SW_Z[1], "侧窗顶"], [PK.zc, "文件袋中心"], [DR_Z[1], "D 环"], [EZ, "檐口"]];
+  const rp = lv.map(([z]) => fr.pt(L, z, 0.05).add(new THREE.Vector3(0.25, 0, 0)));
+  const seg = [rp[0], rp[rp.length - 1]];
+  rp.forEach(p => seg.push(p, p.clone().add(new THREE.Vector3(0.08, 0, 0))));
+  const rl = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(seg), dimMat); rl.userData = { views: V, beam: false }; scene.add(rl); dimItems.push(rl);
+  lv.forEach(([z, t], i) => { if (i) dimText(`${mm(z)}  ${t}`, rp[i].clone().add(new THREE.Vector3(0.5, 0, 0)), V); });
+  dimText("离地高度", rp[rp.length - 1].clone().add(new THREE.Vector3(0.4, 0.18, 0)), V);
+  const ff = FR.F, upf = new THREE.Vector3(0, 0.075, 0), VF = ["cfront"], rowF = (us, z) => us.map(u => ff.pt(u, z, 0.05));
+  const du0 = (W - DOOR.w) / 2, du1 = (W + DOOR.w) / 2;
+  let us = [0, END_WIN_U[0], END_WIN_U[1], du0, du1, END_PK_U[0], END_PK_U[1], W]; chain(rowF(us, 0.04), diffs(us), ff.eb, upf, VF);
+  const colF = (u, zs) => zs.map(z => ff.pt(u, z, 0.05)), sideF = new THREE.Vector3(0, 0, 0.13);
+  chain(colF(du1 + 0.12, [DOOR.sill, DOOR.sill + DOOR.h]), [mm(DOOR.h) + "（门高）"], ff.ea, sideF.clone().multiplyScalar(2.2), VF);
+  dimText("门槛 " + mm(DOOR.sill), ff.pt(W / 2, 0.3, 0.06), VF);
+  chain(colF(END_WIN_U[0] - 0.12, [0, END_WIN_ZC]), [mm(END_WIN_ZC) + "（中心）"], ff.ea, sideF.clone().negate().multiplyScalar(1.8), VF);
+  chain(colF(END_PK_U[1] + 0.12, [0, PK.zc]), [mm(PK.zc) + "（中心）"], ff.ea, sideF.clone().multiplyScalar(1.8), VF);
+  chain([P(-0.06, W + 0.2, 0), P(-0.06, W + 0.2, EZ), P(-0.06, W + 0.2, RZ)], diffs([0, EZ, RZ]), new THREE.Vector3(0, 0, 1), sideF, VF);
+  const VD = ["din"];
+  xs = IN_DU.map(d => W / 2 + d); chain(xs.map(u => P(BX[1], u, 1.8)), diffs(xs), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, -0.09, 0), VD, true);
+}
+const VIEWS = {
+  main: { pos: [-8.6, 5.2, 9.0], tgt: [0.1, 0.95, 0.25], fov: 30, cover: "lines" },
+  eave: { pos: [-2.45, 1.15, 0.2], tgt: [-3.0, 1.72, 2.1], fov: 50, cover: "" },
+  apex: { pos: [-0.75, 1.45, -1.25], tgt: [1.1, 2.5, 0.05], fov: 46, cover: "" },
+  foot: { pos: [0, 1.35, -0.55], tgt: [0, 0.72, 2.4], fov: 56, cover: "" },
+  corner: { pos: [-5.6, 1.45, -4.9], tgt: [-3.0, 0.55, -2.25], fov: 34, cover: "" },
+  valve: { pos: [-2.95, 0.78, 4.5], tgt: [-3.3, 0.46, 2.58], fov: 30, cover: "solid", port: true },
+  cmain: { pos: [-10.6, 4.3, 10.4], tgt: [-0.9, 1.1, 0.5], fov: 30, cover: "solid" },
+  cback: { pos: [10.4, 4.3, -10.6], tgt: [0.5, 1.1, -0.9], fov: 30, cover: "solid" },
+  cghost: { pos: [-8.6, 5.2, 9.0], tgt: [0.1, 0.95, 0.25], fov: 30, cover: "ghost" },
+  cside: { pos: [0.55, 1.4, 11.9], tgt: [0.55, 1.0, 2.6], fov: 22, cover: "solid" },
+  din: { pos: [-3.05, 1.12, 0.0], tgt: [0.4, 1.98, 0.0], fov: 74, cover: "solid" },
+  cin: { pos: [-3.15, 1.55, -0.2], tgt: [3.6, 1.15, 0], fov: 64, cover: "solid" },
+  cfront: { pos: [-15.5, 1.5, 0], tgt: [-3.6, 1.42, 0], fov: 21, cover: "solid" },
+};
+const INSIDE = new Set(["eave", "apex", "foot", "cin", "din"]);
+const ALIAS = { cmain: ["main"], cghost: ["main"] };
+const MODE0 = { lines: "none", "": "none", patch: "solid", solid: "solid", ghost: "ghost" };
+let curView = "cmain", mode = "solid", labelsOn = true, dimsOn = false, portOpen = false;
+function apply() {
+  const v = curView, inside = INSIDE.has(v), patch = false;
+  const ghost = mode === "ghost", solid = mode === "solid" && !patch;
+  cover.visible = solid || ghost; feats.visible = solid || ghost; floorIn.visible = solid || ghost;
+  FEAT_MATS.forEach(([m, op]) => {
+    m.transparent = ghost || op < 1; m.opacity = ghost ? (m === glassMat ? 0.3 : 0.45) : op; m.depthWrite = !ghost; m.needsUpdate = true;
+  });
+  dimItems.forEach(o => { o.visible = dimsOn && o.userData.views.includes(v) && (o.userData.beam || mode !== "none"); });
+  coverPatch.visible = patch; coverLines.visible = mode === "none" && !inside; inLight.visible = solid && inside;
+  Object.assign(coverMat, { transparent: ghost, opacity: ghost ? 0.25 : 1, depthWrite: !ghost }); coverMat.needsUpdate = true;
+  cover.traverse(m => { if (m.isMesh) m.castShadow = !ghost; });
+  valveMeshes.forEach(g => g.visible = !solid || portOpen);
+  portCommon.visible = solid || ghost; portOpenG.visible = (solid || ghost) && portOpen; portClosedG.visible = (solid || ghost) && !portOpen;
+  document.getElementById("port").checked = portOpen;
+  const front = v === "cmain" || v === "cghost";
+  const names = ghost && front ? ["cghost"] : [v, ...(ALIAS[v] || [])], gnames = front ? ["cghost"] : [];
+  tags.forEach(t => {
+    const vs = t.userData.views;
+    const show = t.userData.kind === "port" ? (solid || ghost) && vs.includes(v) && t.userData.open === portOpen
+      : t.userData.kind === "cover"
+      ? (solid ? vs.includes(v) : ghost ? vs.some(x => gnames.includes(x)) : false)
+      : (!solid || inside) && vs.some(x => names.includes(x)) && !(solid && v === "cmain") && !(ghost && v === "valve");
+    t.visible = labelsOn && show && !(dimsOn && v === "cside" && t.userData.kind === "cover");
+  });
+  document.querySelectorAll("#views button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
+  document.querySelectorAll("#modes button").forEach(b => b.classList.toggle("on", b.dataset.m === mode));
+}
+function setView(v, keepMode) {
+  const p = VIEWS[v] || VIEWS.cmain;
+  curView = VIEWS[v] ? v : "cmain";
+  if (!keepMode) mode = MODE0[p.cover];
+  portOpen = !!p.port;
+  const portrait = innerWidth / innerHeight < 1, inside = INSIDE.has(curView);
+  camera.fov = portrait && inside ? Math.min(88, p.fov * 1.5) : p.fov;
+  const tgt = new THREE.Vector3(...p.tgt), panelOn = document.getElementById("panel").style.display !== "none" && document.getElementById("info").open && innerWidth > 900;
+  const whole = ["cmain", "cback", "cghost", "main"].includes(curView);
+  const k = inside ? 1 : portrait ? Math.min(whole ? 4.5 : 3.2, (whole ? 1.7 : 1.25) * innerHeight / innerWidth) : panelOn ? 1.15 : 1;
+  const pos = new THREE.Vector3(...p.pos);
+  if (portrait && whole) {
+    const c = new THREE.Vector3(0, 1.1, 0);
+    pos.add(c.clone().sub(tgt)); tgt.copy(c);
+  }
+  camera.position.copy(tgt).addScaledVector(pos.sub(tgt), k);
+  controls.target.copy(tgt); controls.update();
+  fit(); apply();
+}
+function fit() {
+  const pn = document.getElementById("panel"), open = document.getElementById("info").open;
+  const shift = pn.style.display !== "none" && innerWidth > 900 && open ? (pn.offsetWidth + 24) / 2 : 0;
+  camera.aspect = innerWidth / innerHeight;
+  if (shift) camera.setViewOffset(innerWidth, innerHeight, -shift, 0, innerWidth, innerHeight); else camera.clearViewOffset();
+  camera.updateProjectionMatrix();
+}
+document.getElementById("info").addEventListener("toggle", fit);
+const remember = () => history.replaceState(null, "", `#v=${curView}&c=${mode}` + (LANGQ !== "zh" ? "&lang=" + LANGQ : ""));
+document.getElementById("views").addEventListener("click", e => {
+  if (!e.target.dataset.v) return;
+  setView(e.target.dataset.v, true); remember();
+});
+document.getElementById("modes").addEventListener("click", e => {
+  if (!e.target.dataset.m) return;
+  mode = e.target.dataset.m; apply(); remember();
+});
+document.getElementById("lbl").addEventListener("change", e => { labelsOn = e.target.checked; apply(); });
+document.getElementById("dims").addEventListener("change", e => { dimsOn = e.target.checked; apply(); });
+document.getElementById("port").addEventListener("change", e => { portOpen = e.target.checked; apply(); });
+const UI_EN = { title: "Inflatable tent 3D (air beams inside the tent)", what: "Show", where: "View from",
+  m_solid: "Tent", m_ghost: "Transparent cover", m_none: "Air beams only",
+  v_cmain: "Outside front", v_cback: "Outside back", v_cfront: "Front end", v_cside: "Side A", v_cin: "Inside",
+  v_din: "Inner D-rings", dims: "Show dimensions", v_eave: "Eave corner", v_apex: "Flat top", v_foot: "Side wall", v_corner: "Corner", v_valve: "Valve access", labels: "Show labels", port: "Valve access open", lang: "Language", ver: "Version 2026-11-11",
+  note: "TENT-7252-01 (cover) + TENT-7252-02 (air beams). Ø350, total height 2.75 m, 4 arches + 5 longitudinal beams; dark bands are welds, tube seams face the cover. Tick 'Show dimensions' in the Side A, Front end and Inner D-rings views. Drag to rotate, pinch or scroll to zoom." };
+const UI_PL = {"title": "Namiot pneumatyczny 3D (belki powietrzne wewnątrz)", "what": "Pokaż", "where": "Widok", "m_solid": "Namiot", "m_ghost": "Poszycie przezroczyste", "m_none": "Tylko belki", "v_cmain": "Z zewnątrz, przód", "v_cback": "Z zewnątrz, tył", "v_cfront": "Przód", "v_cside": "Bok A", "v_cin": "Wnętrze", "v_din": "Kółka D wewn.", "dims": "Pokaż wymiary", "v_eave": "Naroże okapu", "v_apex": "Płaski szczyt", "v_foot": "Ściana boczna", "v_corner": "Narożnik", "v_valve": "Otwór serwisowy", "labels": "Pokaż opisy", "port": "Otwór serwisowy otwarty", "lang": "Język", "ver": "Wersja 2026-11-11", "note": "TENT-7252-01 (poszycie) + TENT-7252-02 (belki powietrzne). Ø350, wysokość 2,75 m, 4 łuki + 5 belek podłużnych; ciemne pasy to zgrzewy, szwy rur od strony poszycia. Zaznacz „Pokaż wymiary” w widokach Bok A, Przód i Kółka D wewn. Przeciągnij, aby obrócić; powiększanie dwoma palcami lub kółkiem myszy."};
+const UI_L = LANGQ === "en" ? UI_EN : LANGQ === "pl" ? UI_PL : null;
+if (UI_L) { document.documentElement.lang = LANGQ; document.title = LANGQ === "en" ? "Inflatable tent 3D" : "Namiot pneumatyczny 3D"; document.querySelectorAll("[data-t]").forEach(el => { if (UI_L[el.dataset.t]) el.textContent = UI_L[el.dataset.t]; }); }
+document.querySelectorAll("#langs button").forEach(b => {
+  b.classList.toggle("on", b.dataset.l === LANGQ);
+  b.addEventListener("click", () => { const q = new URLSearchParams(location.hash.slice(1)); q.set("lang", b.dataset.l); location.hash = q.toString(); location.reload(); });
+});
+const params = new URLSearchParams(location.hash.slice(1).replace(/^(\w+)$/, "v=$1"));
+setView(params.get("v") || "cmain");
+if (["solid", "ghost", "none"].includes(params.get("c"))) { mode = params.get("c"); apply(); }
+if (["0", "1"].includes(params.get("port"))) { portOpen = params.get("port") === "1"; apply(); }
+if (params.get("dims") === "1") { document.getElementById("dims").checked = true; dimsOn = true; apply(); }
+if (params.get("labels") === "0") { document.getElementById("lbl").checked = false; labelsOn = false; apply(); }
+if (innerWidth <= 600) document.getElementById("info").open = false;
+if (params.get("ui") === "0") document.getElementById("panel").style.display = "none";
+fit();
+addEventListener("resize", () => {
+  fit();
+  renderer.setSize(innerWidth, innerHeight); labelRenderer.setSize(innerWidth, innerHeight);
+});
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); labelRenderer.render(scene, camera); });
+</script>
+</body>
+</html>
