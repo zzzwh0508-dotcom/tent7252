@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Inflatable tent 3D</title>
+<title>TENT-7252 inflatable tent</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#e4e7ea;font-family:"Helvetica Neue",Helvetica,Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
 #panel{position:fixed;left:12px;top:12px;z-index:2;background:rgba(255,255,255,.93);border-radius:8px;padding:10px 12px;font-size:13px;color:#1d2733;max-width:300px;box-shadow:0 1px 4px rgba(0,0,0,.15);line-height:1.5}
@@ -27,12 +27,12 @@ html,body{margin:0;height:100%;overflow:hidden;background:#e4e7ea;font-family:"H
 </style>
 </head>
 <body>
-<div id="panel"><details id="info" open><summary><b data-t="title">充气帐篷 3D（气柱在帐篷里）</b> <span class="ver" data-t="ver">版本 2026-11-12 02:02</span></summary>
-<div class="row"><span class="lab" data-t="what">看什么</span><span id="modes"><button data-m="solid" data-t="m_solid">帐篷</button><button data-m="ghost" data-t="m_ghost">外罩半透明</button><button data-m="none" data-t="m_none">只看气柱</button></span></div>
-<div class="row"><span class="lab" data-t="where">从哪看</span><span id="views"><button data-v="cmain" data-t="v_cmain">外面·前</button><button data-v="cback" data-t="v_cback">外面·后</button><button data-v="cfront" data-t="v_cfront">前端正面</button><button data-v="cside" data-t="v_cside">侧面 A</button><button data-v="cin" data-t="v_cin">里面</button><button data-v="din" data-t="v_din">里面 D 环</button><button data-v="eave" data-t="v_eave">檐口拐角</button><button data-v="apex" data-t="v_apex">平顶</button><button data-v="foot" data-t="v_foot">侧墙</button><button data-v="floor" data-t="v_floor">地板墙脚</button><button data-v="corner" data-t="v_corner">墙角</button><button data-v="valve" data-t="v_valve">检修口阀门</button></span></div>
+<div id="panel"><details id="info" open><summary><b data-t="title">TENT-7252 充气帐篷 7.2 × 5.2 m</b> <span class="ver" data-t="ver">版本 2026-11-12 13:11</span></summary>
+<div class="row"><span class="lab" data-t="what">显示</span><span id="modes"><button data-m="solid" data-t="m_solid">帐篷</button><button data-m="ghost" data-t="m_ghost">外罩半透明</button><button data-m="none" data-t="m_none">只看气柱</button></span></div>
+<div class="row"><span class="lab" data-t="where">视角</span><span id="views"><button data-v="cmain" data-t="v_cmain">外面·前</button><button data-v="cback" data-t="v_cback">外面·后</button><button data-v="cfront" data-t="v_cfront">前端正面</button><button data-v="cside" data-t="v_cside">侧面 A</button><button data-v="cin" data-t="v_cin">里面</button><button data-v="din" data-t="v_din">里面 D 环</button><button data-v="eave" data-t="v_eave">檐口拐角</button><button data-v="apex" data-t="v_apex">平顶</button><button data-v="foot" data-t="v_foot">侧墙</button><button data-v="floor" data-t="v_floor">地板墙脚</button><button data-v="corner" data-t="v_corner">墙角</button><button data-v="valve" data-t="v_valve">检修口阀门</button></span></div>
 <label class="row" style="display:block"><input type="checkbox" id="lbl" checked> <span data-t="labels">显示标签</span>　<input type="checkbox" id="dims"> <span data-t="dims">显示尺寸</span>　<input type="checkbox" id="port"> <span data-t="port">检修口打开</span></label>
 <div class="row"><span class="lab" data-t="lang">语言</span><span id="langs"><button data-l="zh">中文</button><button data-l="en">English</button><button data-l="pl">Polski</button></span></div>
-<div class="note" data-t="note">TENT-7252-01（外罩）+ TENT-7252-02（气柱）。Ø350，总高 2.75 m，4 根拱形 + 5 根纵向；深色带是焊缝，卷管焊缝都朝外罩。勾“显示尺寸”看位置尺寸（侧面 A、前端正面、里面 D 环三个视角）。拖动旋转，双指或滚轮缩放。</div>
+<div class="note" data-t="note">对应图纸 TENT-7252-01（外罩）、TENT-7252-02（气柱）。拖动旋转，双指或滚轮缩放。</div>
 </details></div>
 <script type="importmap">
 {"imports": {
@@ -1025,14 +1025,14 @@ document.getElementById("modes").addEventListener("click", e => {
 document.getElementById("lbl").addEventListener("change", e => { labelsOn = e.target.checked; apply(); });
 document.getElementById("dims").addEventListener("change", e => { dimsOn = e.target.checked; apply(); });
 document.getElementById("port").addEventListener("change", e => { portOpen = e.target.checked; apply(); });
-const UI_EN = { title: "Inflatable tent 3D (air beams inside the tent)", what: "Show", where: "View from",
+const UI_EN = { title: "TENT-7252 inflatable tent 7.2 x 5.2 m", what: "Display", where: "View",
   m_solid: "Tent", m_ghost: "Transparent cover", m_none: "Air beams only",
   v_cmain: "Outside front", v_cback: "Outside back", v_cfront: "Front end", v_cside: "Side A", v_cin: "Inside",
-  v_din: "Inner D-rings", dims: "Show dimensions", v_eave: "Eave corner", v_apex: "Flat top", v_foot: "Side wall", v_floor: "Floor edge", v_corner: "Corner", v_valve: "Valve access", labels: "Show labels", port: "Valve access open", lang: "Language", ver: "Version 2026-11-12 02:02",
-  note: "TENT-7252-01 (cover) + TENT-7252-02 (air beams). Ø350, total height 2.75 m, 4 arches + 5 longitudinal beams; dark bands are welds, tube seams face the cover. Tick 'Show dimensions' in the Side A, Front end and Inner D-rings views. Drag to rotate, pinch or scroll to zoom." };
-const UI_PL = {"title": "Namiot pneumatyczny 3D (belki powietrzne wewnątrz)", "what": "Pokaż", "where": "Widok", "m_solid": "Namiot", "m_ghost": "Poszycie przezroczyste", "m_none": "Tylko belki", "v_cmain": "Z zewnątrz, przód", "v_cback": "Z zewnątrz, tył", "v_cfront": "Przód", "v_cside": "Bok A", "v_cin": "Wnętrze", "v_din": "Kółka D wewn.", "dims": "Pokaż wymiary", "v_eave": "Naroże okapu", "v_apex": "Płaski szczyt", "v_foot": "Ściana boczna", "v_floor": "Krawędź podłogi", "v_corner": "Narożnik", "v_valve": "Otwór serwisowy", "labels": "Pokaż opisy", "port": "Otwór serwisowy otwarty", "lang": "Język", "ver": "Wersja 2026-11-12 02:02", "note": "TENT-7252-01 (poszycie) + TENT-7252-02 (belki powietrzne). Ø350, wysokość 2,75 m, 4 łuki + 5 belek podłużnych; ciemne pasy to zgrzewy, szwy rur od strony poszycia. Zaznacz „Pokaż wymiary” w widokach Bok A, Przód i Kółka D wewn. Przeciągnij, aby obrócić; powiększanie dwoma palcami lub kółkiem myszy."};
+  v_din: "Inner D-rings", dims: "Show dimensions", v_eave: "Eave corner", v_apex: "Flat top", v_foot: "Side wall", v_floor: "Floor edge", v_corner: "Corner", v_valve: "Valve access", labels: "Show labels", port: "Valve access open", lang: "Language", ver: "Version 2026-11-12 13:11",
+  note: "Drawings TENT-7252-01 (cover) and TENT-7252-02 (air beams). Drag to rotate, pinch or scroll to zoom." };
+const UI_PL = {"title": "TENT-7252 namiot pneumatyczny 7,2 x 5,2 m", "what": "Pokaż", "where": "Widok", "m_solid": "Namiot", "m_ghost": "Poszycie przezroczyste", "m_none": "Tylko belki", "v_cmain": "Z zewnątrz, przód", "v_cback": "Z zewnątrz, tył", "v_cfront": "Przód", "v_cside": "Bok A", "v_cin": "Wnętrze", "v_din": "Kółka D wewn.", "dims": "Pokaż wymiary", "v_eave": "Naroże okapu", "v_apex": "Płaski szczyt", "v_foot": "Ściana boczna", "v_floor": "Krawędź podłogi", "v_corner": "Narożnik", "v_valve": "Otwór serwisowy", "labels": "Pokaż opisy", "port": "Otwór serwisowy otwarty", "lang": "Język", "ver": "Wersja 2026-11-12 13:11", "note": "Rysunki TENT-7252-01 (poszycie) i TENT-7252-02 (belki powietrzne). Przeciągnij, aby obrócić; powiększanie dwoma palcami lub kółkiem myszy."};
 const UI_L = LANGQ === "en" ? UI_EN : LANGQ === "pl" ? UI_PL : null;
-if (UI_L) { document.documentElement.lang = LANGQ; document.title = LANGQ === "en" ? "Inflatable tent 3D" : "Namiot pneumatyczny 3D"; document.querySelectorAll("[data-t]").forEach(el => { if (UI_L[el.dataset.t]) el.textContent = UI_L[el.dataset.t]; }); }
+if (UI_L) { document.documentElement.lang = LANGQ; document.title = LANGQ === "en" ? "TENT-7252 inflatable tent" : "TENT-7252 namiot pneumatyczny"; document.querySelectorAll("[data-t]").forEach(el => { if (UI_L[el.dataset.t]) el.textContent = UI_L[el.dataset.t]; }); }
 document.querySelectorAll("#langs button").forEach(b => {
   b.classList.toggle("on", b.dataset.l === LANGQ);
   b.addEventListener("click", () => { const q = new URLSearchParams(location.hash.slice(1)); q.set("lang", b.dataset.l); location.hash = q.toString(); location.reload(); });
