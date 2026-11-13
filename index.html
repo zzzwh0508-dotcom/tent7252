@@ -23,11 +23,11 @@ html,body{margin:0;height:100%;overflow:hidden;background:#e4e7ea;font-family:"H
 .tag em{width:calc(var(--fs,13px) * 1.6);height:max(1.5px, calc(var(--fs,13px) * .1));background:#1d2733;flex:none}
 .tag span{font-style:normal;background:rgba(255,255,255,.94);border:1px solid #1d2733;border-radius:3px;padding:2px 6px}
 .tag.l{flex-direction:row-reverse}
-.dim{text-align:left;font-size:calc(var(--fs,13px) * .82);color:#1d2733;background:rgba(255,255,255,.88);padding:0 3px;border-radius:2px;white-space:nowrap;pointer-events:none}
+.dim{text-align:left;font-size:calc(var(--fs,13px) * .92);color:#1d2733;background:rgba(255,255,255,.88);padding:0 3px;border-radius:2px;white-space:nowrap;pointer-events:none}
 </style>
 </head>
 <body>
-<div id="panel"><details id="info" open><summary><b data-t="title">TENT-7252 充气帐篷 7.2 × 5.2 m</b> <span class="ver" data-t="ver">版本 2026-11-13 14:30</span></summary>
+<div id="panel"><details id="info" open><summary><b data-t="title">TENT-7252 充气帐篷 7.2 × 5.2 m</b> <span class="ver" data-t="ver">版本 2026-11-13 16:06</span></summary>
 <div class="row"><span class="lab" data-t="what">显示</span><span id="modes"><button data-m="solid" data-t="m_solid">帐篷</button><button data-m="ghost" data-t="m_ghost">外罩半透明</button><button data-m="none" data-t="m_none">只看气柱</button></span></div>
 <div class="row"><span class="lab" data-t="where">视角</span><span id="views"><button data-v="cmain" data-t="v_cmain">外面·前</button><button data-v="cback" data-t="v_cback">外面·后</button><button data-v="cfront" data-t="v_cfront">前端正面</button><button data-v="cside" data-t="v_cside">侧面 A</button><button data-v="cin" data-t="v_cin">里面</button><button data-v="din" data-t="v_din">里面 D 环</button><button data-v="eave" data-t="v_eave">檐口拐角</button><button data-v="apex" data-t="v_apex">平顶</button><button data-v="foot" data-t="v_foot">侧墙</button><button data-v="floor" data-t="v_floor">地板墙脚</button><button data-v="corner" data-t="v_corner">墙角</button><button data-v="valve" data-t="v_valve">检修口阀门</button><button data-v="guy" data-t="v_guy">风绳点 D 环</button><button data-v="link" data-t="v_link">门顶连接布</button></span></div>
 <label class="row" style="display:block"><input type="checkbox" id="lbl" checked> <span data-t="labels">显示标签</span>　<input type="checkbox" id="dims"> <span data-t="dims">显示尺寸</span>　<input type="checkbox" id="port"> <span data-t="port">检修口打开</span></label>
@@ -45,7 +45,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-{ const f = new URLSearchParams(location.hash.slice(1)).get("fs"); if (f) document.documentElement.style.setProperty("--fs", f + "px"); }
+{ const f = new URLSearchParams(location.hash.slice(1)).get("fs"); if (f) document.documentElement.style.setProperty("--fs", f + "px"); else if (innerWidth <= 600) document.documentElement.style.setProperty("--fs", "11px"); }
 const L = 7.2, W = 5.2, EI = 0.3, EZ = 1.95, RW = 0.7, RZ = 2.75;
 const D = 0.35, R = D / 2;
 const BX = [0.3, 2.5, 4.7, 6.9];
@@ -828,8 +828,9 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 const tags = [];
 const LANG0 = "en";
+const UI0 = new URLSearchParams(location.hash.slice(1)).get("ui") === "0";
 const LANGQ = (l => ["zh", "en", "pl"].includes(l) ? l : LANG0)(new URLSearchParams(location.hash.slice(1)).get("lang"));
-const PL_TAG = {"Floor over the whole ground, turned up 150, corners welded": "Podłoga na całej powierzchni, wywinięta 150, narożniki zgrzane", "Outside of the upstand: hook velcro 150 (100 + 50)": "Wywinięcie z zewnątrz: rzep (haczyki) 150 (100 + 50)", "Cover, inside all round: loop velcro 150": "Poszycie od wewnątrz dookoła: rzep (pętelki) 150", "Ground beam sits on the floor; upstand between beam and cover": "Belka przyziemna leży na podłodze; wywinięcie między belką a poszyciem", "Ground beam": "Belka przyziemna", "Removable floor (light grey), turned up 150 on all sides": "Podłoga zdejmowana (jasnoszara), wywinięta 150 na wszystkich bokach", "Mitre seam (weld tape over it)": "Szew skośny (pod taśmą zgrzewaną)", "Eave beam T-joined here": "Tu belka okapowa połączona w T", "Leg of arch 1": "Noga łuku 1", "Roof slope": "Skos dachu", "Mitre seam": "Szew skośny", "Ridge beam T-joined from both sides": "Belka kalenicowa w T z obu stron", "T-joint: leg welded onto the ground beam": "Złącze T: noga zgrzana z belką przyziemną", "Eave beam": "Belka okapowa", "Leg": "Noga", "Opening 300 x 300, 60 band round it": "Otwór 300 x 300, wokół pas 60", "Loop velcro 50 wide: left, right, bottom": "Rzep z pętelkami 50: lewo, prawo, dół", "Flap rolled up, held by 2 straps": "Klapa zwinięta, trzymana 2 paskami", "Flap 440 x 460, top edge welded": "Klapa 440 x 460, góra zgrzana", "Hook velcro on 3 sides inside the flap": "Spód klapy: rzep z haczykami", "Pull tab: to find the valves after packing": "Uchwyt – łatwo znaleźć zawory", "2 straps for the rolled flap": "2 paski do zwiniętej klapy", "Arch 1": "Łuk 1", "Arch 2": "Łuk 2", "Arch 3": "Łuk 3", "Arch 4": "Łuk 4", "Ridge beam": "Belka kalenicowa", "Ground beam (one piece)": "Belka przyziemna (w całości)", "Tube seam faces the cover": "Szew rury od strony poszycia", "Ground beam: one piece, rounded ends": "Belka przyziemna: w całości, końce zaokrąglone", "Leg T-joined onto the ground beam": "Noga w T na belce przyziemnej", "Seam faces the cover": "Szew od strony poszycia", "3 End window 300 x 300": "3 Okno czołowe 300 x 300", "4 A4 pocket (beside door)": "4 Kieszeń A4 (przy drzwiach)", "2 Side window 500 x 500": "2 Okno boczne 500 x 500", "4 A4 pocket (between windows)": "4 Kieszeń A4 (między oknami)", "5 Valve access (valves inside)": "5 Otwór serwisowy (zawory pod klapą)", "6 Air outlet Ø400": "6 Otwór wentylacyjny Ø400", "7 Cable entry Ø150": "7 Przepust kablowy Ø150", "8 D-rings": "8 Kółka D", "4 A4 pocket": "4 Kieszeń A4", "8 D-ring": "8 Kółko D", "2040 / 2400 above floor": "2040 / 2400 od podłogi", "8 Guy points (4 per side, at the arches)": "8 Punkty odciągów (po 4 na boku, przy łukach)", "8 Ground rings (arch feet and end corners)": "8 Pierścienie kotwiące (łuki, naroża)", "8 Guy point": "8 Punkt odciągu", "8 Guy points": "8 Punkty odciągów", "8 Ground ring": "8 Pierścień", "Cover on velcro wraps, removable": "Poszycie na opaskach na rzep, zdejmowane", "Velcro wraps 300 wide (39)": "Opaski na rzep 300 (39 szt.)", "8 Guy point (strap inside around the eave beam)": "8 Punkt odciągu (pasek wewnątrz wokół belki okapowej)", "3 small D-rings along the top of each arch": "Po 3 małe kółka D u góry każdego łuku", "1 on the inside of each leg, 1500 above floor": "Po 1 na każdej nodze, 1500 od podłogi", "Velcro wraps 300 wide keep the cover in place on the beams (39)": "Opaski na rzep 300: poszycie się nie przesuwa (39 szt.)", "Guy point strap: around the eave beam, metal buckle": "Pasek punktu odciągu: wokół belki okapowej, metalowa klamra", "8 D-ring (patch + strap, horizontal)": "8 Kółko D (łata + pasek, poziomo)", "1 Back door": "1 Drzwi tylne", "5 Valve access (side B, back end, opposite corner)": "5 Otwór serwisowy (bok B, tył)", "Side B": "Bok B", "2 Window": "2 Okno", "4 Pocket": "4 Kieszeń", "5 Valve access": "5 Otwór serwisowy", "6 Outlet Ø400": "6 Otwór Ø400", "7 Cable Ø150": "7 Przepust Ø150", "Air beams against the cover": "Belki przylegają do poszycia", "Back door (inside)": "Drzwi tylne (od środka)", "Inner D-rings (light loads only)": "Kółka D wewn. (tylko lekkie obciążenia)", "None on the eave and ridge beams": "Brak na belkach okapowych i kalenicowej", "Light loads only: cables, lamps, partitions": "Tylko lekkie rzeczy: kable, lampy, ścianki", "Cover = outer edge of arches, beams fixed inside": "Poszycie = krawędź łuków, belki od środka", "Transparent cover": "Poszycie przezroczyste", "S safety valve, next to V": "S zawór bezpieczeństwa, obok V", "V inflation valve": "V zawór do pompowania", "S safety valve (next to V)": "S zawór bezpieczeństwa (obok V)", "V + S (side A front, on top of the ground beam)": "V + S (bok A przód, na górze belki przyziemnej)", "1 Door 1600 x 1900-2100 (threshold 150)": "1 Drzwi 1600 x 1900-2100 (próg 150)", "1 Door 1600 x 1900-2100": "1 Drzwi 1600 x 1900-2100", "2 on the inside of each leg, 800 / 1400 above floor": "Po 2 na każdej nodze, 800 / 1400 od podłogi", "6 D-rings along the top of each arch": "Po 6 kółek D u góry każdego łuku", "V inflation valve, on top of the ground beam": "V zawór do pompowania, na górze belki przyziemnej", "Link fabric: end wall joined to the end arch, door frame against it": "Tkanina łącząca: ściana szczytowa połączona z łukiem końcowym, rama drzwi przy łuku", "Link fabric over the door": "Tkanina nad drzwiami", "Link fabric: end wall joined to the end arch along its inner edge": "Tkanina łącząca: ściana szczytowa połączona z łukiem końcowym wzdłuż jego wewnętrznej krawędzi", "Door frame against the arch, opening 1600 x 1900-2100 unchanged": "Rama drzwi przy łuku, otwór 1600 x 1900-2100 bez zmian", "Ø120 patch, glued after inflation": "Łata Ø120, klejona po napompowaniu", "Patch Ø160, HF welded to the cover all over": "Łata Ø160, zgrzana HF z poszyciem na całej powierzchni", "50 webbing, box-X stitched to the patch": "Taśma 50, przyszyta do łaty ściegiem prostokąt z krzyżem", "50 stainless D-ring on the webbing end": "Kółko D 50 ze stali nierdzewnej na końcu taśmy", "Needle holes only in the patch, not the cover": "Otwory po igle tylko w łacie, poszycie bez przeszyć"};
+const PL_TAG = {"Floor over the whole ground, turned up 150, corners welded": "Podłoga na całej powierzchni, wywinięta 150, narożniki zgrzane", "Outside of the upstand: hook velcro 150 (100 + 50)": "Wywinięcie z zewnątrz: rzep (haczyki) 150 (100 + 50)", "Cover, inside all round: loop velcro 150": "Poszycie od wewnątrz dookoła: rzep (pętelki) 150", "Ground beam sits on the floor; upstand between beam and cover": "Belka przyziemna leży na podłodze; wywinięcie między belką a poszyciem", "Ground beam": "Belka przyziemna", "Removable floor (light grey), turned up 150 on all sides": "Podłoga zdejmowana (jasnoszara), wywinięta 150 na wszystkich bokach", "Mitre seam (weld tape over it)": "Szew skośny (pod taśmą zgrzewaną)", "Eave beam T-joined here": "Tu belka okapowa połączona w T", "Leg of arch 1": "Noga łuku 1", "Roof slope": "Skos dachu", "Mitre seam": "Szew skośny", "Ridge beam T-joined from both sides": "Belka kalenicowa w T z obu stron", "T-joint: leg welded onto the ground beam": "Złącze T: noga zgrzana z belką przyziemną", "Eave beam": "Belka okapowa", "Leg": "Noga", "Opening 300 x 300, 60 band round it": "Otwór 300 x 300, wokół pas 60", "Loop velcro 50 wide: left, right, bottom": "Rzep z pętelkami 50: lewo, prawo, dół", "Flap rolled up, held by 2 straps": "Klapa zwinięta, trzymana 2 paskami", "Flap 440 x 460, top edge welded": "Klapa 440 x 460, góra zgrzana", "Hook velcro on 3 sides inside the flap": "Spód klapy: rzep z haczykami", "Pull tab: to find the valves after packing": "Uchwyt – łatwo znaleźć zawory", "2 straps for the rolled flap": "2 paski do zwiniętej klapy", "Arch 1": "Łuk 1", "Arch 2": "Łuk 2", "Arch 3": "Łuk 3", "Arch 4": "Łuk 4", "Ridge beam": "Belka kalenicowa", "Ground beam (one piece)": "Belka przyziemna (w całości)", "Tube seam faces the cover": "Szew rury od strony poszycia", "Ground beam: one piece, rounded ends": "Belka przyziemna: w całości, końce zaokrąglone", "Leg T-joined onto the ground beam": "Noga w T na belce przyziemnej", "Seam faces the cover": "Szew od strony poszycia", "3 End window 300 x 300": "3 Okno czołowe 300 x 300", "4 A4 pocket (beside door)": "4 Kieszeń A4 (przy drzwiach)", "2 Side window 500 x 500": "2 Okno boczne 500 x 500", "4 A4 pocket (between windows)": "4 Kieszeń A4 (między oknami)", "5 Valve access (valves inside)": "5 Otwór serwisowy (zawory pod klapą)", "6 Air outlet Ø400": "6 Otwór wentylacyjny Ø400", "7 Cable entry Ø150": "7 Przepust kablowy Ø150", "8 D-rings": "8 Kółka D", "4 A4 pocket": "4 Kieszeń A4", "8 D-ring": "8 Kółko D", "2040 / 2400 above floor": "2040 / 2400 od podłogi", "8 Guy points (4 per side, at the arches)": "8 Punkty odciągów (po 4 na boku, przy łukach)", "8 Ground rings (arch feet and end corners)": "8 Pierścienie kotwiące (łuki, naroża)", "8 Guy point": "8 Punkt odciągu", "8 Guy points": "8 Punkty odciągów", "8 Ground ring": "8 Pierścień", "Cover on velcro wraps, removable": "Poszycie na opaskach na rzep, zdejmowane", "Velcro wraps 300 wide (39)": "Opaski na rzep 300 (39 szt.)", "8 Guy point (strap inside around the eave beam)": "8 Punkt odciągu (pasek wewnątrz wokół belki okapowej)", "3 small D-rings along the top of each arch": "Po 3 małe kółka D u góry każdego łuku", "1 on the inside of each leg, 1500 above floor": "Po 1 na każdej nodze, 1500 od podłogi", "Velcro wraps 300 wide keep the cover in place on the beams (39)": "Opaski na rzep 300: poszycie się nie przesuwa (39 szt.)", "Guy point strap: around the eave beam, metal buckle": "Pasek punktu odciągu: wokół belki okapowej, metalowa klamra", "8 D-ring (patch + strap, horizontal)": "8 Kółko D (łata + pasek, poziomo)", "1 Back door": "1 Drzwi tylne", "5 Valve access (side B, back end, opposite corner)": "5 Otwór serwisowy (bok B, tył)", "Side B": "Bok B", "2 Window": "2 Okno", "4 Pocket": "4 Kieszeń", "5 Valve access": "5 Otwór serwisowy", "6 Outlet Ø400": "6 Otwór Ø400", "7 Cable Ø150": "7 Przepust Ø150", "Air beams against the cover": "Belki przylegają do poszycia", "Back door (inside)": "Drzwi tylne (od środka)", "Inner D-rings (light loads only)": "Kółka D wewn. (tylko lekkie obciążenia)", "None on the eave and ridge beams": "Brak na belkach okapowych i kalenicowej", "Light loads only: cables, lamps, partitions": "Tylko lekkie rzeczy: kable, lampy, ścianki", "Cover = outer edge of arches, beams fixed inside": "Poszycie = krawędź łuków, belki od środka", "Transparent cover": "Poszycie przezroczyste", "S safety valve, next to V": "S zawór bezpieczeństwa, obok V", "V inflation valve": "V zawór do pompowania", "S safety valve (next to V)": "S zawór bezpieczeństwa (obok V)", "V + S (side A front, on top of the ground beam)": "V + S (bok A przód, na górze belki przyziemnej)", "1 Door 1600 x 1900-2100 (threshold 150)": "1 Drzwi 1600 x 1900-2100 (próg 150)", "1 Door 1600 x 1900-2100": "1 Drzwi 1600 x 1900-2100", "2 on the inside of each leg, 800 / 1400 above floor": "Po 2 na każdej nodze, 800 / 1400 od podłogi", "6 D-rings along the top of each arch": "Po 6 kółek D u góry każdego łuku", "V inflation valve, on top of the ground beam": "V zawór do pompowania, na górze belki przyziemnej", "Link fabric: end wall joined to the end arch, door frame against it": "Tkanina łącząca: ściana szczytowa połączona z łukiem końcowym, rama drzwi przy łuku", "Link fabric over the door": "Tkanina nad drzwiami", "Link fabric: end wall joined to the end arch along its inner edge": "Tkanina łącząca: ściana szczytowa połączona z łukiem końcowym wzdłuż jego wewnętrznej krawędzi", "Door frame against the arch, opening 1600 x 1900-2100 unchanged": "Rama drzwi przy łuku, otwór 1600 x 1900-2100 bez zmian", "Ø120 patch, glued after inflation": "Łata Ø120, klejona po napompowaniu", "Patch Ø160, HF welded to the cover all over": "Łata Ø160, zgrzana HF z poszyciem na całej powierzchni", "50 webbing, box-X stitched to the patch": "Taśma 50, przyszyta do łaty ściegiem prostokąt z krzyżem", "50 stainless D-ring on the webbing end": "Kółko D 50 ze stali nierdzewnej na końcu taśmy", "Needle holes only in the patch, not the cover": "Otwory po igle tylko w łacie, poszycie bez przeszyć", "4 A4 pocket 350 x 250 (beside door)": "4 Kieszeń A4 350 x 250 (przy drzwiach)", "4 A4 pocket 350 x 250 (between windows)": "4 Kieszeń A4 350 x 250 (między oknami)", "5 Valve access 300 x 300 (valves inside)": "5 Otwór serwisowy 300 x 300 (zawory pod klapą)", "4 A4 pocket 350 x 250": "4 Kieszeń A4 350 x 250", "8 Guy point (1500 above ground)": "8 Punkt odciągu (wys. 1500)", "1 Back door 1600 x 1900-2100": "1 Drzwi tylne 1600 x 1900-2100", "Air beams Ø350, arches 2200 apart": "Belki powietrzne Ø350, rozstaw łuków 2200", "5 Valve access 300 x 300 (side B, back end, opposite corner)": "5 Otwór serwisowy 300 x 300 (bok B, tył)", "Side B (windows and openings as side A)": "Bok B (okna i otwory jak bok A)"};
 let TAGKIND = "beam";
 function tag(text, p, views, left = false) {
   if (Array.isArray(text)) text = LANGQ === "en" ? text[1] : LANGQ === "pl" ? (PL_TAG[text[1]] || text[1]) : text[0];
@@ -870,7 +871,7 @@ ptag(["拉手：打包后好找阀门", "Pull tab: to find the valves after pack
 ptag(["2 条带子：卷起盖片时用", "2 straps for the rolled flap"], PA.strap, false);
 TAGKIND = "beam";
 for (let k = 0; k < 4; k++) tag([`${k + 1} 号`, `Arch ${k + 1}`], P(BX[k], W / 2, RZ + 0.05), ["main", "cghost"]);
-tag(["V + S（侧面 A 前端，地面气柱顶上）", "V + S (side A front, on top of the ground beam)"], anchors[`valve_${BX[0]}_V`], ["main", "cghost"]);
+tag(["V + S（侧面 A 前端，地面气柱顶上）", "V + S (side A front, on top of the ground beam)"], anchors[`valve_${BX[0]}_V`], ["main", "cghost"], true);
 tag(["檐口纵向", "Eave beam"], P(3.6, W - EB[0], EB[1] + R), ["main"]);
 tag(["地面纵向（一整根）", "Ground beam (one piece)"], P(3.6, W - GB[0], R * 2), ["main"]);
 tag(["卷管纵向焊缝朝外罩", "Tube seam faces the cover"], anchors.seam2_4, ["main"]);
@@ -881,26 +882,27 @@ tag(["地面纵向气柱一整根，两头圆头封口", "Ground beam: one piece
 tag(["卷管纵向焊缝朝外罩", "Tube seam faces the cover"], anchors.seam1_0, ["corner"]);
 tag(["立柱下端 T 接在地面纵向气柱上", "Leg T-joined onto the ground beam"], anchors.foot1_B, ["corner"]);
 tag(["纵向焊缝朝外罩", "Seam faces the cover"], anchors.groundB_mid(1.6), ["corner"]);
+tag(["气柱 Ø350，拱形间距 2200", "Air beams Ø350, arches 2200 apart"], P(BX[3], W - (GB[0] + EB[0]) / 2, (GB[1] + EB[1]) / 2), ["main", "cghost"]);
 TAGKIND = "cover";
 const sideMid = (fr, a, b, off = 0.02) => fr.pt(a, b, off);
 tag(["1 门 宽 1600，高 1900–2100（门槛 150）", "1 Door 1600 x 1900-2100 (threshold 150)"], sideMid(FR.F, W / 2 - 0.3, 1.0), ["cmain"], true);
 tag(["3 端窗 300 × 300", "3 End window 300 x 300"], sideMid(FR.F, END_WIN_U[0], END_WIN_ZC + EW / 2 + 0.2), ["cmain"], true);
-tag(["4 A4 文件袋（门旁）", "4 A4 pocket (beside door)"], sideMid(FR.F, END_PK_U[1], PK.zc), ["cmain"]);
+tag(["4 A4 文件袋 350 × 250（门旁）", "4 A4 pocket 350 x 250 (beside door)"], sideMid(FR.F, END_PK_U[1], PK.zc), ["cmain"]);
 tag(["2 侧窗 500 × 500", "2 Side window 500 x 500"], sideMid(FR.A, SW_X[1] + 0.25, SW_Z[1] + 0.1), ["cmain"]);
-tag(["4 A4 文件袋（两窗之间）", "4 A4 pocket (between windows)"], sideMid(FR.A, SP_X + 0.35, PK.zc), ["cmain"]);
-tag(["5 气阀检修口（阀门在里面）", "5 Valve access (valves inside)"], sideMid(FR.A, CUT.x1, CUT.z1), ["cmain"]);
+tag(["4 A4 文件袋 350 × 250（两窗之间）", "4 A4 pocket 350 x 250 (between windows)"], sideMid(FR.A, SP_X + 0.35, PK.zc), ["cmain"]);
+tag(["5 气阀检修口 300 × 300（阀门在里面）", "5 Valve access 300 x 300 (valves inside)"], sideMid(FR.A, CUT.x1, CUT.z1), ["cmain"]);
 tag(["6 通风口 Ø400", "6 Air outlet Ø400"], sideMid(FR.A, OUT_X[0] - 0.2, SLV_Z, 0.14), ["cmain"], true);
 tag(["7 电缆口 Ø150", "7 Cable entry Ø150"], sideMid(FR.A, CAB_X[1] + 0.08, SLV_Z, 0.13), ["cmain"]);
 tag(["8 风绳点", "8 Guy points"], sideMid(FR.A, BX[3], GP_Z), ["cmain"]);
 tag(["8 地钉环（拱脚和两端靠角）", "8 Ground rings (arch feet and end corners)"], sideMid(FR.A, BX[2], 0.03), ["cmain"]);
 tag(["1 门 1600 × 1900–2100", "1 Door 1600 x 1900-2100"], sideMid(FR.F, W / 2 + 0.25, 0.45), ["cfront"]);
 tag(["3 端窗 300 × 300", "3 End window 300 x 300"], sideMid(FR.F, END_WIN_U[0], END_WIN_ZC - 0.2), ["cfront"], true);
-tag(["4 A4 文件袋", "4 A4 pocket"], sideMid(FR.F, END_PK_U[1], PK.zc - 0.2), ["cfront"]);
-tag(["8 风绳点", "8 Guy point"], sideMid(FR.F, W - GP_END.u, GP_END.z), ["cfront"]);
+tag(["4 A4 文件袋 350 × 250", "4 A4 pocket 350 x 250"], sideMid(FR.F, END_PK_U[1], PK.zc - 0.2), ["cfront"]);
+tag(["8 风绳点（离地 1500）", "8 Guy point (1500 above ground)"], sideMid(FR.F, W - GP_END.u, GP_END.z), ["cfront"]);
 tag(["8 地钉环", "8 Ground ring"], sideMid(FR.F, W - ANCHOR_END_U, 0.03), ["cfront"]);
-tag(["1 后门（2 号门）", "1 Back door"], sideMid(FR.K, W / 2 + 0.3, 1.0), ["cback"]);
-tag(["5 检修口（侧面 B 后端，和侧面 A 对角）", "5 Valve access (side B, back end, opposite corner)"], sideMid(FR.B, L - CUT.x0, CUT.z0), ["cback"]);
-tag(["侧面 B", "Side B"], sideMid(FR.B, 3.6, 1.15), ["cback"], true);
+tag(["1 后门 1600 × 1900–2100", "1 Back door 1600 x 1900-2100"], sideMid(FR.K, W / 2 + 0.3, 1.0), ["cback"]);
+tag(["5 检修口 300 × 300（侧面 B 后端，和侧面 A 对角）", "5 Valve access 300 x 300 (side B, back end, opposite corner)"], sideMid(FR.B, L - CUT.x0, CUT.z0), ["cback"]);
+tag(["侧面 B（窗、洞口和侧面 A 一样）", "Side B (windows and openings as side A)"], sideMid(FR.B, 3.6, 1.15), ["cback"], true);
 tag(["外罩半透明", "Transparent cover"], P(3.6, W - 1.25, EZ + 0.42), ["cghost"]);
 tag(["外罩用魔术贴包带扣在气柱上，可拆", "Cover on velcro wraps, removable"], P(1.2, W - EI * 1.2 / EZ, 1.2), ["cghost"]);
 tag(["2 侧窗", "2 Window"], sideMid(FR.A, SW_X[0] + 0.25, SW_Z[1] + 0.12), ["cside"]);
@@ -934,9 +936,9 @@ tag([`离地 ${IN_Z[0]} / ${IN_Z[1]}`, `${IN_Z[0]} / ${IN_Z[1]} above floor`], A
 tag(["檐口、平顶的纵向气柱上不装", "None on the eave and ridge beams"], P((BX[1] + BX[2]) / 2, W / 2, RB[1] - R), ["din"]);
 tag(["只挂轻物：走电线、挂灯、挂布隔断", "Light loads only: cables, lamps, partitions"], P(BX[1], 1.55, 0.85), ["din"]);
 const dimMat = new THREE.LineBasicMaterial({ color: 0x1d2733 }), dimItems = [];
-function dimText(text, p, views, beam) {
+function dimText(text, p, views, beam, cx = 0.5) {
   const el = document.createElement("div"); el.className = "dim"; el.textContent = tr(text);
-  const o = new CSS2DObject(el); o.position.copy(p); o.userData = { views, beam }; scene.add(o); dimItems.push(o);
+  const o = new CSS2DObject(el); o.center.set(cx, 0.5); o.position.copy(p); o.userData = { views, beam }; scene.add(o); dimItems.push(o);
 }
 function chain(pts, labels, tick, lab, views, beam = false) {
   const seg = [];
@@ -947,12 +949,16 @@ function chain(pts, labels, tick, lab, views, beam = false) {
   labels.forEach((t, i) => { if (t !== "") dimText(t, pts[i].clone().add(pts[i + 1]).multiplyScalar(0.5).add(lab), views, beam); });
 }
 const mm = v => String(Math.round(v * 1000));
-const DT = { "风绳点、地钉环列距（正对拱形）": "Guy points / ground rings (at the arches)", "风绳点": "guy point", "（通风口、电缆口量到中心）": "(outlets and cable entries to centre)", "离地高度": "Height above ground",
+const DT = { "总长 ": "Length ", "总宽 ": "Width ", "总高 ": "Height ", "檐口高 ": "Eave ", "总高": "overall height", "平顶 ": "Flat top ", "侧窗 ": "Window ", "端窗 ": "End window ", "文件袋 ": "Pocket ", "检修口 ": "Valve access ", "通风口 ": "Outlet ", "电缆口 ": "Cable ", "拱形间距": "Arch spacing", " × ": " x ", "风绳点、地钉环列距（正对拱形）": "Guy points / ground rings (at the arches)", "风绳点": "guy point", "（通风口、电缆口量到中心）": "(outlets and cable entries to centre)", "离地高度": "Height above ground",
   "D 环": "D-ring", "检修口底": "valve access bottom", "通风口、电缆口中心": "outlet / cable centre", "侧窗底": "window bottom", "侧窗顶": "window top",
   "文件袋中心": "pocket centre", "文件袋上边": "pocket top", "检修口顶": "valve access top", "（上边）": " (top)", "（门两边）": " (door sides)", "（门中间）": " (door middle)", "檐口": "eave", "（门高）": " (door)", "门槛 ": "Threshold ", "（中心）": " (centre)" };
-const DT_PL = {"风绳点、地钉环列距（正对拱形）": "Punkty odciągów / kotwienia (przy łukach)", "风绳点": "punkt odciągu", "（通风口、电缆口量到中心）": "(otwory i przepusty – do środka)", "离地高度": "Wysokość od podłoża", "D 环": "kółko D", "检修口底": "dół otworu serwisowego", "通风口、电缆口中心": "środek otworu / przepustu", "侧窗底": "dół okna", "侧窗顶": "góra okna", "文件袋中心": "środek kieszeni", "檐口": "okap", "（门高）": " (drzwi)", "门槛 ": "Próg ", "（中心）": " (środek)", "文件袋上边": "góra kieszeni", "（上边）": " (góra)", "（门两边）": " (boki drzwi)", "（门中间）": " (środek drzwi)", "检修口顶": "góra otworu serwisowego"};
+const DT_PL = {"总长 ": "Długość ", "总宽 ": "Szerokość ", "总高 ": "Wysokość ", "檐口高 ": "Okap ", "总高": "wysokość całkowita", "平顶 ": "Płaski szczyt ", "侧窗 ": "Okno ", "端窗 ": "Okno czołowe ", "文件袋 ": "Kieszeń ", "检修口 ": "Otwór serwisowy ", "通风口 ": "Otwór ", "电缆口 ": "Przepust ", "拱形间距": "Rozstaw łuków", " × ": " x ", "风绳点、地钉环列距（正对拱形）": "Punkty odciągów / kotwienia (przy łukach)", "风绳点": "punkt odciągu", "（通风口、电缆口量到中心）": "(otwory i przepusty – do środka)", "离地高度": "Wysokość od podłoża", "D 环": "kółko D", "检修口底": "dół otworu serwisowego", "通风口、电缆口中心": "środek otworu / przepustu", "侧窗底": "dół okna", "侧窗顶": "góra okna", "文件袋中心": "środek kieszeni", "檐口": "okap", "（门高）": " (drzwi)", "门槛 ": "Próg ", "（中心）": " (środek)", "文件袋上边": "góra kieszeni", "（上边）": " (góra)", "（门两边）": " (boki drzwi)", "（门中间）": " (środek drzwi)", "检修口顶": "góra otworu serwisowego"};
 const tr = t => LANGQ === "zh" ? t : Object.entries(LANGQ === "pl" ? DT_PL : DT).reduce((a, [k, v]) => a.split(k).join(v), t);
 const diffs = a => a.slice(1).map((v, i) => mm(v - a[i]));
+function lineD(pts, views, beam = false) {
+  const l = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), dimMat);
+  l.userData = { views, beam }; scene.add(l); dimItems.push(l);
+}
 {
   const fr = FR.A, up = fr.eb.clone().multiplyScalar(0.07), V = ["cside"];
   const row = (xs, z) => xs.map(x => fr.pt(x, z, 0.05));
@@ -961,13 +967,20 @@ const diffs = a => a.slice(1).map((v, i) => mm(v - a[i]));
   xs = [0, SW_X[0], SW_X[0] + SWN, SP_X, SP_X + PK.w, SW_X[1], SW_X[1] + SWN, L]; chain(row(xs, 1.66), diffs(xs), fr.eb, up, V);
   xs = [0, CUT.x0, CUT.x1, CAB_X[0], OUT_X[0], OUT_X[1], CAB_X[1], L]; chain(row(xs, 0.03), diffs(xs), fr.eb, up, V);
   dimText("（通风口、电缆口量到中心）", fr.pt(L / 2, 0.03, 0.05).add(new THREE.Vector3(0, -0.13, 0)), V);
-  const xr = L + 0.25, lv = [[0, ""], [CUT.z1, "检修口顶"], [SLV_Z, "通风口、电缆口中心"], [SW_Z[0], "侧窗底"], [SW_Z[1], "侧窗顶"], [PK.zc + PK.h / 2, "文件袋上边"], [GP_Z, "风绳点"], [EZ, "檐口"]];
+  chain(row([0, L], RZ + 0.2), ["总长 " + mm(L)], fr.eb, up, V);
+  const labA = (t, x, z, off = 0.07) => dimText(t, fr.pt(x, z, off), V);
+  for (const x of SW_X) labA(`侧窗 ${mm(SWN)} × ${mm(SW_Z[1] - SW_Z[0])}`, x + SWN / 2, (SW_Z[0] + SW_Z[1]) / 2);
+  labA(`文件袋 ${mm(PK.w)} × ${mm(PK.h)}`, SP_X + PK.w / 2, PK.zc);
+  labA(`检修口 ${mm(CUT.x1 - CUT.x0)} × ${mm(CUT.z1 - CUT.z0)}`, (CUT.x0 + CUT.x1) / 2, 0.36, 0.1);
+  for (const x of OUT_X) labA("通风口 Ø400", x, SLV_Z - 0.33);
+  for (const x of CAB_X) dimText("电缆口 Ø150", fr.pt(x + 0.12, SLV_Z, 0.07), V, false, 0);
+  const xr = L + 0.25, lv = [[0, ""], [CUT.z0, "检修口底"], [CUT.z1, "检修口顶"], [SLV_Z, "通风口、电缆口中心"], [SW_Z[0], "侧窗底"], [SW_Z[1], "侧窗顶"], [PK.zc + PK.h / 2, "文件袋上边"], [GP_Z, "风绳点"], [EZ, "檐口"], [RZ, "总高"]];
   const rp = lv.map(([z]) => fr.pt(L, z, 0.05).add(new THREE.Vector3(0.25, 0, 0)));
   const seg = [rp[0], rp[rp.length - 1]];
   rp.forEach(p => seg.push(p, p.clone().add(new THREE.Vector3(0.08, 0, 0))));
   const rl = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(seg), dimMat); rl.userData = { views: V, beam: false }; scene.add(rl); dimItems.push(rl);
-  lv.forEach(([z, t], i) => { if (i) dimText(`${mm(z)}  ${t}`, rp[i].clone().add(new THREE.Vector3(0.5, 0, 0)), V); });
-  dimText("离地高度", rp[rp.length - 1].clone().add(new THREE.Vector3(0.4, 0.18, 0)), V);
+  lv.forEach(([z, t], i) => { if (i) dimText(`${mm(z)}  ${t}`, rp[i].clone().add(new THREE.Vector3(0.12, 0, 0)), V, false, 0); });
+  dimText("离地高度", rp[rp.length - 1].clone().add(new THREE.Vector3(0, 0.2, 0)), V, false, 0);
   const ff = FR.F, upf = new THREE.Vector3(0, 0.075, 0), VF = ["cfront"], rowF = (us, z) => us.map(u => ff.pt(u, z, 0.05));
   const du0 = (W - DOOR.w) / 2, du1 = (W + DOOR.w) / 2;
   let us = [0, END_WIN_U[0], END_WIN_U[1], du0, du1, END_PK_U[0], END_PK_U[1], W]; chain(rowF(us, 0.04), diffs(us), ff.eb, upf, VF);
@@ -977,7 +990,27 @@ const diffs = a => a.slice(1).map((v, i) => mm(v - a[i]));
   dimText("门槛 " + mm(DOOR.sill), ff.pt(W / 2, 0.3, 0.06), VF);
   chain(colF(END_WIN_U[0] - 0.12, [0, END_WIN_ZC]), [mm(END_WIN_ZC) + "（中心）"], ff.ea, sideF.clone().negate().multiplyScalar(1.8), VF);
   chain(colF(END_PK_U[1] + 0.12, [0, PK.zc + PK.h / 2]), [mm(PK.zc + PK.h / 2) + "（上边）"], ff.ea, sideF.clone().multiplyScalar(1.8), VF);
-  chain([P(-0.06, W + 0.2, 0), P(-0.06, W + 0.2, EZ), P(-0.06, W + 0.2, RZ)], diffs([0, EZ, RZ]), new THREE.Vector3(0, 0, 1), sideF, VF);
+  { const hu = W + 0.7, x = -0.06, lv = [[0, ""], [EZ, "檐口"], [RZ, "总高"]], seg = [P(x, hu, 0), P(x, hu, RZ)];
+    lv.forEach(([z]) => seg.push(P(x, hu - 0.06, z), P(x, hu + 0.06, z)));
+    seg.push(P(x, W - EI + 0.06, EZ), P(x, hu + 0.06, EZ), P(x, (W + RW) / 2 + 0.06, RZ), P(x, hu + 0.06, RZ));
+    lineD(seg, VF);
+    lv.forEach(([z, t]) => { if (t) dimText(`${mm(z)}  ${t}`, P(x, hu - 0.12, z + 0.1), VF, false, 1); }); }
+  chain([P(-0.06, 0, RZ + 0.3), P(-0.06, W, RZ + 0.3)], ["总宽 " + mm(W)], ff.eb, upf, VF);
+  chain([P(-0.06, (W - RW) / 2, RZ + 0.1), P(-0.06, (W + RW) / 2, RZ + 0.1)], ["平顶 " + mm(RW)], ff.eb, upf, VF);
+  for (const [vw, back] of [["cmain", false], ["cback", true]]) {
+    const Q = (x, u, z) => back ? P(L - x, W - u, z) : P(x, u, z), V2 = [vw], g = 0.005, o = 0.55, t = 0.08, hu = -0.5;
+    const out = Q(0, 1, 0).sub(Q(0, 0, 0)), fwd = Q(1, 0, 0).sub(Q(0, 0, 0)), upv = new THREE.Vector3(0, 1, 0);
+    lineD([Q(0, W + o, g), Q(L, W + o, g), Q(0, W + 0.1, g), Q(0, W + o + t, g), Q(L, W + 0.1, g), Q(L, W + o + t, g)], V2, true);
+    dimText("总长 " + mm(L), Q(L * (back ? 0.7 : 0.3), W + o + 0.3, g), V2, true);
+    lineD([Q(-o, 0, g), Q(-o, W, g), Q(-0.1, 0, g), Q(-o - t, 0, g), Q(-0.1, W, g), Q(-o - t, W, g)], V2, true);
+    dimText("总宽 " + mm(W), Q(-o - 0.4, W / 2, g), V2, true);
+    lineD([Q(0, hu, 0), Q(0, hu, RZ), Q(0, hu - t, 0), Q(0, hu + t, 0), Q(0, EI - 0.06, EZ), Q(0, hu - t, EZ), Q(0, (W - RW) / 2 - 0.06, RZ), Q(0, hu - t, RZ)], V2, true);
+    dimText("檐口高 " + mm(EZ), Q(0, hu - 0.15, EZ), V2, true, 1);
+    dimText("总高 " + mm(RZ), Q(0, hu - 0.15, RZ), V2, true, 1);
+    const xs = [0, ...BX, L];
+    chain(xs.map(x => Q(x, W + 0.28, g)), diffs(xs), out, out.clone().multiplyScalar(0.13), V2, "only");
+    chain([Q(BX[0], (W - RW) / 2, RZ + 0.12), Q(BX[0], (W + RW) / 2, RZ + 0.12)], ["平顶 " + mm(RW)], upv, upv.clone().multiplyScalar(0.1), V2, "only");
+  }
   const VD = ["din"];
   xs = IN_DU.map(d => W / 2 + d); chain(xs.map(u => P(BX[1], u, 1.8)), diffs(xs), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, -0.09, 0), VD, true);
 }
@@ -994,10 +1027,10 @@ const VIEWS = {
   cmain: { pos: [-10.6, 4.3, 10.4], tgt: [-0.9, 1.1, 0.5], fov: 30, cover: "solid" },
   cback: { pos: [10.4, 4.3, -10.6], tgt: [0.5, 1.1, -0.9], fov: 30, cover: "solid" },
   cghost: { pos: [-8.6, 5.2, 9.0], tgt: [0.1, 0.95, 0.25], fov: 30, cover: "ghost" },
-  cside: { pos: [0.55, 1.4, 11.9], tgt: [0.55, 1.0, 2.6], fov: 22, cover: "solid" },
+  cside: { pos: [0.55, 1.4, 11.9], tgt: [0.55, 1.0, 2.6], fov: 22, cover: "solid", span: 11 },
   din: { pos: [-3.05, 1.12, 0.0], tgt: [0.4, 1.98, 0.0], fov: 74, cover: "solid" },
   cin: { pos: [-3.15, 1.55, -0.2], tgt: [3.6, 1.15, 0], fov: 64, cover: "solid" },
-  cfront: { pos: [-15.5, 1.5, 0], tgt: [-3.6, 1.42, 0], fov: 21, cover: "solid" },
+  cfront: { pos: [-15.5, 1.5, 0], tgt: [-3.6, 1.42, 0], fov: 21, cover: "solid", span: 9 },
 };
 const INSIDE = new Set(["eave", "apex", "foot", "floor", "cin", "din", "link"]);
 const ALIAS = { cmain: ["main"], cghost: ["main"] };
@@ -1010,7 +1043,7 @@ function apply() {
   FEAT_MATS.forEach(([m, op]) => {
     m.transparent = ghost || op < 1; m.opacity = ghost ? (m === glassMat ? 0.3 : 0.45) : op; m.depthWrite = !ghost; m.needsUpdate = true;
   });
-  dimItems.forEach(o => { o.visible = dimsOn && o.userData.views.includes(v) && (o.userData.beam || mode !== "none"); });
+  dimItems.forEach(o => { const b = o.userData.beam; o.visible = dimsOn && o.userData.views.includes(v) && (b === "only" ? mode === "none" : (b || mode !== "none")); });
   coverPatch.visible = patch; coverLines.visible = mode === "none" && !inside; inLight.visible = solid && inside;
   Object.assign(coverMat, { transparent: ghost, opacity: ghost ? 0.25 : 1, depthWrite: !ghost }); coverMat.needsUpdate = true;
   cover.traverse(m => { if (m.isMesh) m.castShadow = !ghost; });
@@ -1039,7 +1072,12 @@ function setView(v, keepMode) {
   camera.fov = portrait && inside ? Math.min(88, p.fov * 1.5) : p.fov;
   const tgt = new THREE.Vector3(...p.tgt), panelOn = document.getElementById("panel").style.display !== "none" && document.getElementById("info").open && innerWidth > 900;
   const whole = ["cmain", "cback", "cghost", "main"].includes(curView);
-  const k = inside ? 1 : portrait ? Math.min(whole ? 4.5 : 3.2, (whole ? 1.7 : 1.25) * innerHeight / innerWidth) : panelOn ? 1.15 : 1;
+  let k = inside ? 1 : portrait ? Math.min(whole ? 4.5 : 3.2, (whole ? 1.7 : 1.25) * innerHeight / innerWidth) : panelOn ? (UI0 ? 1.15 : 1.3) : 1;
+  if (p.span && !portrait && !UI0) {
+    const pw = panelOn ? document.getElementById("panel").offsetWidth + 24 : 0;
+    const ta = Math.tan(p.fov * Math.PI / 360) * (innerWidth - pw) / innerHeight, dist = Math.hypot(p.pos[0] - p.tgt[0], p.pos[1] - p.tgt[1], p.pos[2] - p.tgt[2]);
+    k = Math.max(k, p.span / 2 / (dist * ta));
+  }
   const pos = new THREE.Vector3(...p.pos);
   if (portrait && whole) {
     const c = new THREE.Vector3(0, 1.1, 0);
@@ -1072,9 +1110,9 @@ document.getElementById("port").addEventListener("change", e => { portOpen = e.t
 const UI_EN = { title: "TENT-7252 inflatable tent 7.2 x 5.2 m", what: "Display", where: "View",
   m_solid: "Tent", m_ghost: "Transparent cover", m_none: "Air beams only",
   v_cmain: "Outside front", v_cback: "Outside back", v_cfront: "Front end", v_cside: "Side A", v_cin: "Inside",
-  v_din: "Inner D-rings", dims: "Show dimensions", v_eave: "Eave corner", v_apex: "Flat top", v_foot: "Side wall", v_floor: "Floor edge", v_corner: "Corner", v_valve: "Valve access", v_guy: "Guy point D-ring", v_link: "Door link fabric", labels: "Show labels", port: "Valve access open", lang: "Language", ver: "Version 2026-11-13 14:30",
+  v_din: "Inner D-rings", dims: "Show dimensions", v_eave: "Eave corner", v_apex: "Flat top", v_foot: "Side wall", v_floor: "Floor edge", v_corner: "Corner", v_valve: "Valve access", v_guy: "Guy point D-ring", v_link: "Door link fabric", labels: "Show labels", port: "Valve access open", lang: "Language", ver: "Version 2026-11-13 16:06",
   note: "Drawings TENT-7252-01 (cover) and TENT-7252-02 (air beams). Drag to rotate, pinch or scroll to zoom." };
-const UI_PL = {"title": "TENT-7252 namiot pneumatyczny 7,2 x 5,2 m", "what": "Pokaż", "where": "Widok", "m_solid": "Namiot", "m_ghost": "Poszycie przezroczyste", "m_none": "Tylko belki", "v_cmain": "Z zewnątrz, przód", "v_cback": "Z zewnątrz, tył", "v_cfront": "Przód", "v_cside": "Bok A", "v_cin": "Wnętrze", "v_din": "Kółka D wewn.", "dims": "Pokaż wymiary", "v_eave": "Naroże okapu", "v_apex": "Płaski szczyt", "v_foot": "Ściana boczna", "v_floor": "Krawędź podłogi", "v_corner": "Narożnik", "v_valve": "Otwór serwisowy", "v_guy": "Kółko D odciągu", "v_link": "Tkanina łącząca nad drzwiami", "labels": "Pokaż opisy", "port": "Otwór serwisowy otwarty", "lang": "Język", "ver": "Wersja 2026-11-13 14:30", "note": "Rysunki TENT-7252-01 (poszycie) i TENT-7252-02 (belki powietrzne). Przeciągnij, aby obrócić; powiększanie dwoma palcami lub kółkiem myszy."};
+const UI_PL = {"title": "TENT-7252 namiot pneumatyczny 7,2 x 5,2 m", "what": "Pokaż", "where": "Widok", "m_solid": "Namiot", "m_ghost": "Poszycie przezroczyste", "m_none": "Tylko belki", "v_cmain": "Z zewnątrz, przód", "v_cback": "Z zewnątrz, tył", "v_cfront": "Przód", "v_cside": "Bok A", "v_cin": "Wnętrze", "v_din": "Kółka D wewn.", "dims": "Pokaż wymiary", "v_eave": "Naroże okapu", "v_apex": "Płaski szczyt", "v_foot": "Ściana boczna", "v_floor": "Krawędź podłogi", "v_corner": "Narożnik", "v_valve": "Otwór serwisowy", "v_guy": "Kółko D odciągu", "v_link": "Tkanina łącząca nad drzwiami", "labels": "Pokaż opisy", "port": "Otwór serwisowy otwarty", "lang": "Język", "ver": "Wersja 2026-11-13 16:06", "note": "Rysunki TENT-7252-01 (poszycie) i TENT-7252-02 (belki powietrzne). Przeciągnij, aby obrócić; powiększanie dwoma palcami lub kółkiem myszy."};
 const UI_L = LANGQ === "en" ? UI_EN : LANGQ === "pl" ? UI_PL : null;
 if (UI_L) { document.documentElement.lang = LANGQ; document.title = LANGQ === "en" ? "TENT-7252 inflatable tent" : "TENT-7252 namiot pneumatyczny"; document.querySelectorAll("[data-t]").forEach(el => { if (UI_L[el.dataset.t]) el.textContent = UI_L[el.dataset.t]; }); } else { document.documentElement.lang = "zh"; document.title = "TENT-7252 充气帐篷"; }
 document.querySelectorAll("#langs button").forEach(b => {
@@ -1085,7 +1123,7 @@ const params = new URLSearchParams(location.hash.slice(1).replace(/^(\w+)$/, "v=
 setView(params.get("v") || "cmain");
 if (["solid", "ghost", "none"].includes(params.get("c"))) { mode = params.get("c"); apply(); }
 if (["0", "1"].includes(params.get("port"))) { portOpen = params.get("port") === "1"; apply(); }
-if (params.get("dims") === "1") { document.getElementById("dims").checked = true; dimsOn = true; apply(); }
+{ const dq = params.get("dims"); dimsOn = dq ? dq === "1" : params.get("ui") !== "0"; document.getElementById("dims").checked = dimsOn; apply(); }
 if (params.get("labels") === "0") { document.getElementById("lbl").checked = false; labelsOn = false; apply(); }
 if (innerWidth <= 600) document.getElementById("info").open = false;
 if (params.get("ui") === "0") document.getElementById("panel").style.display = "none";
